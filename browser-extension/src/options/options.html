@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memory Layer — Options</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font: 14px/1.6 system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 32px; max-width: 560px; }
+    h1 { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+    h2 { font-size: 14px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 24px 0 12px; }
+    label { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6366f1; }
+    select {
+      background: #1e293b; border: 1px solid #334155; border-radius: 6px;
+      color: #e2e8f0; padding: 6px 10px; font-size: 13px;
+    }
+    .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .row span { font-size: 13px; }
+    button.primary {
+      margin-top: 24px; padding: 9px 20px; background: #4f46e5;
+      color: #fff; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    button.primary:hover { background: #4338ca; }
+    #saved-msg { margin-top: 10px; color: #34d399; font-size: 13px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Memory Layer — Options</h1>
+
+  <h2>Enabled hosts</h2>
+  <label>
+    <input type="checkbox" id="enable-claude" checked />
+    claude.ai
+  </label>
+  <label>
+    <input type="checkbox" id="enable-chatgpt" checked />
+    chatgpt.com
+  </label>
+
+  <h2>Button position</h2>
+  <div class="row">
+    <span>Float anchor</span>
+    <select id="btn-position">
+      <option value="above">Above textarea</option>
+      <option value="below">Below textarea</option>
+    </select>
+  </div>
+
+  <h2>Appearance</h2>
+  <div class="row">
+    <span>Theme</span>
+    <select id="theme">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+      <option value="system">Follow system</option>
+    </select>
+  </div>
+
+  <button class="primary" id="save-btn">Save</button>
+  <div id="saved-msg">Settings saved.</div>
+
+  <script src="options.js"></script>
+</body>
+</html>

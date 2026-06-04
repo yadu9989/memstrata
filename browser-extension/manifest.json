@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "Memory Layer",
+  "version": "5.3.1",
+  "description": "Passive AI response capture and explicit prompt augmentation with project context.",
+  "permissions": ["activeTab", "storage", "scripting", "alarms"],
+  "host_permissions": [
+    "https://claude.ai/*",
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://chat.deepseek.com/*",
+    "https://grok.com/*",
+    "https://github.com/copilot/*",
+    "https://copilot.microsoft.com/*",
+    "https://*.bing.com/*",
+    "https://chat.mistral.ai/*",
+    "https://www.meta.ai/*",
+    "https://www.perplexity.ai/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://gemini.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://github.com/copilot/*",
+        "https://copilot.microsoft.com/*",
+        "https://*.bing.com/*",
+        "https://chat.mistral.ai/*",
+        "https://www.meta.ai/*",
+        "https://www.perplexity.ai/*"
+      ],
+      "js": ["content/universal_content_script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Memory Layer",
+    "default_icon": {
+      "16": "public/icon-16.png",
+      "48": "public/icon-48.png",
+      "128": "public/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+  "icons": {
+    "16": "public/icon-16.png",
+    "48": "public/icon-48.png",
+    "128": "public/icon-128.png"
+  }
+}

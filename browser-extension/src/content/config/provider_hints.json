@@ -1,0 +1,67 @@
+{
+  "_schema_version": 3,
+  "_updated_at": "2026-06-03",
+  "providers": {
+    "claude.ai": {
+      "provider_id": "anthropic",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["aria_live", "semantic_attr"],
+      "exclude_selectors": ["[data-testid='message-composer']"],
+      "init_delay_ms": 500,
+      "url_session_pattern": "^/chat/([a-f0-9-]+)"
+    },
+    "chatgpt.com": {
+      "provider_id": "openai",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["semantic_attr", "velocity"],
+      "url_session_pattern": "^/c/([a-f0-9-]+)"
+    },
+    "gemini.google.com": {
+      "provider_id": "google",
+      "debounce_ms": 2000,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/app/([a-z0-9-]+)"
+    },
+    "chat.deepseek.com": {
+      "provider_id": "deepseek",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/a/chat/s/([a-zA-Z0-9-]+)"
+    },
+    "grok.com": {
+      "provider_id": "xai",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/chat/([a-z0-9-]+)"
+    },
+    "chat.mistral.ai": {
+      "provider_id": "mistral",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/chat/([a-z0-9-]+)"
+    },
+    "www.meta.ai": {
+      "provider_id": "meta",
+      "debounce_ms": 1500,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/c/([0-9]+)"
+    },
+    "www.perplexity.ai": {
+      "provider_id": "perplexity",
+      "debounce_ms": 2000,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "url_session_pattern": "/search/([a-zA-Z0-9-]+)"
+    },
+    "github.com": {
+      "provider_id": "github",
+      "debounce_ms": 1500,
+      "path_filter": "/copilot/"
+    },
+    "copilot.microsoft.com": {
+      "provider_id": "copilot",
+      "debounce_ms": 2000,
+      "preferred_detectors": ["velocity", "semantic_attr"],
+      "shadow_hosts": ["cib-serp", "cib-chat-main", "cib-chat-turn", "cib-message-group", "cib-message"]
+    }
+  }
+}

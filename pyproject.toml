@@ -1,0 +1,8 @@
+[build-system] 
+requires = ["setuptools>=61.0", "wheel"] 
+build-backend = "setuptools.build_meta" 
+[tool.setuptools] 
+packages = ["shared", "billing", "harness", "extension", "migrations", "memory_layer"] 
+[project] 
+name = "memstrata" 
+version = "0.1.0" 
