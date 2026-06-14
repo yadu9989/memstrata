@@ -35,22 +35,29 @@ dependencies = [
     # surface (these are simpler synchronous POSTs from worker / CLI code).
     "requests>=2.31",
 
-    # Local SQLite + vector storage
-    "sqlite-vec>=0.1.6",
+    # Local SQLite + vector storage.
+    # Pinned exactly. The vec0 virtual-table module ships as a
+    # platform-specific loadable extension binary inside the wheel;
+    # a >= range lets pip pick different patch versions per platform
+    # which has been seen to surface as silent NotSupportedError on
+    # macOS runners (the binary loads but vec0 syntax fails to parse).
+    "sqlite-vec==0.1.6",
 
     # Tree-sitter AST grounding (Layer 1).
     #
-    # CRITICAL: pin core + every grammar to the SAME minor (0.23.x).
-    # Mixing a 0.25 core with a 0.23 grammar (or any other ABI cross)
-    # produces silent segfaults on Ubuntu + Windows fatal access
-    # violations during AST parsing. The grammar wheels embed their
-    # parser binaries compiled against a specific tree-sitter core ABI;
-    # the loader does not check at runtime. We pin to <0.24 so pip
-    # never installs a cross-ABI mix.
-    "tree-sitter>=0.23,<0.24",
-    "tree-sitter-python>=0.23,<0.24",
-    "tree-sitter-javascript>=0.23,<0.24",
-    "tree-sitter-typescript>=0.23,<0.24",
+    # CRITICAL: pin core + every grammar EXACTLY.
+    #
+    # tree-sitter grammar wheels embed their parser binaries compiled
+    # against a specific tree-sitter core ABI; the loader does not
+    # check at runtime. A `>=0.23,<0.24` range still let pip resolve
+    # different patch versions per platform in CI (e.g., 0.23.0 core
+    # with 0.23.6 grammar) and we saw silent segfaults on Ubuntu +
+    # Windows fatal access violations during AST parsing. Exact pins
+    # eliminate the resolver variance.
+    "tree-sitter==0.23.2",
+    "tree-sitter-python==0.23.6",
+    "tree-sitter-javascript==0.23.1",
+    "tree-sitter-typescript==0.23.2",
 
     # MCP server (Anthropic-spec) for Claude Desktop / Cursor / etc.
     "mcp>=1.0",
@@ -118,4 +125,5 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [
     "requires_pro_overlay: test requires the memstrata-pro overlay; skipped on Open-only daemon",
+    "requires_sqlite_vec: test requires the sqlite-vec extension to load + vec0 to be usable; skipped on platforms where the wheel doesn't load",
 ]

@@ -9,6 +9,9 @@ from pathlib import Path
 
 import pytest
 
+# Whole file requires sqlite-vec — the orchestrator writes to code_chunks_vec.
+pytestmark = pytest.mark.requires_sqlite_vec
+
 from memstrata.layer3._db import init_db
 from memstrata.layer3.ingestion import (
     BackfillOrchestrator,

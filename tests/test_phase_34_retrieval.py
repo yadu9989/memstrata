@@ -20,6 +20,9 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
+# Whole file requires sqlite-vec — context-rewrite tests query telemetry_timeline_vec.
+pytestmark = pytest.mark.requires_sqlite_vec
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

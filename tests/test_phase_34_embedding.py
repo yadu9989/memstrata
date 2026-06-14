@@ -21,6 +21,9 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
+# Whole file requires sqlite-vec — every test here exercises telemetry_timeline_vec.
+pytestmark = pytest.mark.requires_sqlite_vec
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

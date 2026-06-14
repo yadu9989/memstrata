@@ -8,6 +8,9 @@ from pathlib import Path
 import pytest
 
 from memstrata.layer3._db import init_db
+
+# Whole file requires sqlite-vec — the watcher mutates code_chunks_vec.
+pytestmark = pytest.mark.requires_sqlite_vec
 from memstrata.layer3.ingestion import (
     BackfillOrchestrator,
     NoOpEmbedder,

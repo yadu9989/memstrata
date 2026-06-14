@@ -18,6 +18,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+# Whole file requires sqlite-vec — every test here exercises code_chunks_vec.
+pytestmark = pytest.mark.requires_sqlite_vec
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
