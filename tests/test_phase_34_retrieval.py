@@ -31,14 +31,14 @@ def isolated_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(isolated_db):
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
 
 @pytest.fixture
 def db_path(isolated_db):
-    from memory_layer.layer3._db import get_db_path
+    from memstrata.layer3._db import get_db_path
     return get_db_path()
 
 
@@ -58,7 +58,7 @@ def _insert_turn_with_embedding(db_path, *, chat_session_id: str, text: str,
                                  role: str = "user", embedding: list[float],
                                  recorded_at: str | None = None) -> int:
     """Insert a timeline row + embedding directly; return timeline_id."""
-    from memory_layer.layer3._db import _load_vec_extension
+    from memstrata.layer3._db import _load_vec_extension
     conn = sqlite3.connect(str(db_path), timeout=10.0)
     conn.row_factory = sqlite3.Row
     _load_vec_extension(conn)
@@ -130,7 +130,7 @@ class TestScoringBlend:
 
     def test_formula_alpha_70(self):
         """final_score = 0.7*sim + 0.3*recency exactly."""
-        from memory_layer.layer3.retrieval import compute_final_score
+        from memstrata.layer3.retrieval import compute_final_score
         now = datetime.now(timezone.utc)
         # Use a timestamp 1 second in the past to avoid sub-second rounding in strftime.
         recorded_str = (now - timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -141,7 +141,7 @@ class TestScoringBlend:
         assert final == pytest.approx(0.7 * 0.8 + 0.3 * rec, abs=1e-6)
 
     def test_recency_decays_with_age(self):
-        from memory_layer.layer3.retrieval import RECENCY_HALF_LIFE_SECONDS, compute_final_score
+        from memstrata.layer3.retrieval import RECENCY_HALF_LIFE_SECONDS, compute_final_score
         now = datetime.now(timezone.utc)
         # At exactly 3 days old, recency = 0.5 ** 1 = 0.5
         three_days_ago = now - timedelta(seconds=RECENCY_HALF_LIFE_SECONDS)
@@ -151,7 +151,7 @@ class TestScoringBlend:
 
     def test_high_similarity_beats_high_recency(self):
         """A very similar but older turn should outscore a dissimilar recent one."""
-        from memory_layer.layer3.retrieval import compute_final_score
+        from memstrata.layer3.retrieval import compute_final_score
         now = datetime.now(timezone.utc)
         old = (now - timedelta(days=10)).strftime("%Y-%m-%d %H:%M:%S")
         new = (now - timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -161,7 +161,7 @@ class TestScoringBlend:
 
     def test_equal_similarity_prefers_newer(self):
         """When similarity is the same, newer turn wins on final_score."""
-        from memory_layer.layer3.retrieval import compute_final_score
+        from memstrata.layer3.retrieval import compute_final_score
         now = datetime.now(timezone.utc)
         old = (now - timedelta(days=5)).strftime("%Y-%m-%d %H:%M:%S")
         new = (now - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -180,7 +180,7 @@ class TestTokenBudget:
 
     def test_skips_turn_that_exceeds_budget(self):
         """A turn whose token cost alone exceeds the budget must be skipped."""
-        from memory_layer.layer3.retrieval import estimate_tokens, fit_to_budget
+        from memstrata.layer3.retrieval import estimate_tokens, fit_to_budget
         long_text = "x" * 800  # 800 chars = 200 tokens
         short_text = "y" * 40  # 40 chars = 10 tokens
         turns = [
@@ -193,14 +193,14 @@ class TestTokenBudget:
 
     def test_never_truncates_text(self):
         """Text returned by fit_to_budget must be identical to input text."""
-        from memory_layer.layer3.retrieval import fit_to_budget
+        from memstrata.layer3.retrieval import fit_to_budget
         turns = [self._make_turn("hello world this is a sentence", 0.8)]
         selected = fit_to_budget(turns, token_budget=1000)
         assert selected[0]["text"] == "hello world this is a sentence"
 
     def test_greedy_fills_to_budget(self):
         """Multiple small turns should be packed in until budget is exhausted."""
-        from memory_layer.layer3.retrieval import estimate_tokens, fit_to_budget
+        from memstrata.layer3.retrieval import estimate_tokens, fit_to_budget
         turns = [self._make_turn("a" * 40, float(i)) for i in range(10)]
         budget = estimate_tokens("a" * 40) * 3  # room for exactly 3 turns
         selected = fit_to_budget(turns, token_budget=budget)
@@ -208,7 +208,7 @@ class TestTokenBudget:
 
     def test_selects_highest_scoring_within_budget(self):
         """Greedy fill must pick turns by descending final_score."""
-        from memory_layer.layer3.retrieval import fit_to_budget
+        from memstrata.layer3.retrieval import fit_to_budget
         turns = [
             self._make_turn("low  score turn abc", 0.1),
             self._make_turn("high score turn xyz", 0.9),
@@ -218,34 +218,34 @@ class TestTokenBudget:
         assert selected[0]["final_score"] == pytest.approx(0.9)
 
     def test_estimate_tokens_is_len_div_4(self):
-        from memory_layer.layer3.retrieval import estimate_tokens
+        from memstrata.layer3.retrieval import estimate_tokens
         assert estimate_tokens("a" * 100) == 25
         assert estimate_tokens("") == 0
 
 
 class TestAgeHuman:
     def test_just_now(self):
-        from memory_layer.layer3.retrieval import age_human
+        from memstrata.layer3.retrieval import age_human
         now = datetime.now(timezone.utc)
         assert age_human(now - timedelta(seconds=30), now) == "just now"
 
     def test_minutes(self):
-        from memory_layer.layer3.retrieval import age_human
+        from memstrata.layer3.retrieval import age_human
         now = datetime.now(timezone.utc)
         assert "minute" in age_human(now - timedelta(minutes=5), now)
 
     def test_hours(self):
-        from memory_layer.layer3.retrieval import age_human
+        from memstrata.layer3.retrieval import age_human
         now = datetime.now(timezone.utc)
         assert "hour" in age_human(now - timedelta(hours=3), now)
 
     def test_days(self):
-        from memory_layer.layer3.retrieval import age_human
+        from memstrata.layer3.retrieval import age_human
         now = datetime.now(timezone.utc)
         assert "day" in age_human(now - timedelta(days=5), now)
 
     def test_singular_vs_plural(self):
-        from memory_layer.layer3.retrieval import age_human
+        from memstrata.layer3.retrieval import age_human
         now = datetime.now(timezone.utc)
         assert age_human(now - timedelta(hours=1), now) == "1 hour ago"
         assert age_human(now - timedelta(hours=2), now) == "2 hours ago"
@@ -304,7 +304,7 @@ class TestEdgeCases:
         conn.close()
 
         # No embeddings in queue → with_embeddings = 0
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=None):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=None):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="debug the authentication callback", provider_id="anthropic")
 
@@ -332,7 +332,7 @@ class TestEdgeCases:
         )
 
         # Even though embedding exists, embed_text returns None → fallback
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=None):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=None):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="debug the token expiry issue", provider_id="anthropic")
 
@@ -363,7 +363,7 @@ class TestNormalPath:
                                      text=short_text, embedding=_fake_vec(seed=1.0))
 
         fake_embedding = _fake_vec(seed=1.0)
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=fake_embedding):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=fake_embedding):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="help me debug the auth callback", provider_id="anthropic")
 
@@ -382,7 +382,7 @@ class TestNormalPath:
             embedding=_fake_vec(),
         )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec()):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec()):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="how do I handle burst traffic", provider_id="openai")
 
@@ -424,7 +424,7 @@ class TestNormalPath:
         _insert_turn_with_embedding(db_path, chat_session_id=cs_id,
                                      text=small_text, embedding=_fake_vec(seed=0.99))
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=query_vec):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=query_vec):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="what stack are we using for the backend",
                                   provider_id="anthropic", budget=100)  # 100 tokens
@@ -463,7 +463,7 @@ class TestNormalPath:
             embedding=_fake_vec(seed=0.98), recorded_at=turn2_time,
         )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec(seed=1.0)):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec(seed=1.0)):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="which Python version is the project using",
                                   provider_id="anthropic")
@@ -487,7 +487,7 @@ class TestNormalPath:
             embedding=_fake_vec(),
         )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec()):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec()):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="explain the database concurrency model",
                                   provider_id="anthropic")
@@ -507,7 +507,7 @@ class TestNormalPath:
                 embedding=_fake_vec(seed=float(i + 1)),
             )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec()):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec()):
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="tell me about the authentication subsystem",
                                   provider_id="anthropic")
@@ -530,7 +530,7 @@ class TestNormalPath:
         _insert_turn_with_embedding(db_path, chat_session_id=cs_b,
                                      text=text_b, embedding=_fake_vec(seed=1.0))
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec()):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec()):
             data = _post_rewrite(client, chat_session_id=cs_a,
                                   draft="explain the caching strategy for session A",
                                   provider_id="anthropic")
@@ -549,7 +549,7 @@ class TestNormalPath:
             embedding=_fake_vec(),
         )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec()):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec()):
             # Query with the wrong provider_id
             data = _post_rewrite(client, chat_session_id=cs_id,
                                   draft="why did we choose FastAPI for the service",
@@ -615,7 +615,7 @@ class TestExternalSessionIdLookup:
             embedding=_fake_vec(seed=1.0),
         )
 
-        with patch("memory_layer.layer3.retrieval.embed_text", return_value=_fake_vec(seed=1.0)):
+        with patch("memstrata.layer3.retrieval.embed_text", return_value=_fake_vec(seed=1.0)):
             resp = client.post("/context/for-chat-rewrite", json={
                 "external_session_id": ext_id,
                 "provider_id": "anthropic",

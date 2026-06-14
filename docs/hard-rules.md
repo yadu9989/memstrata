@@ -115,7 +115,7 @@ exceptions are correct.
 
 ### Rule 6 — Open code never imports Pro code
 
-This repository contains zero `from memory_layer_pro import …`,
+This repository contains zero `from memstrata_pro import …`,
 zero `from harness import …`, zero `from billing import …`. CI greps
 for these on every PR and fails the build on a match.
 
@@ -180,7 +180,7 @@ A few clarifications, because each has come up in review:
   is not — sanitize it before logging.
 
 - **Rule 6 applies to runtime imports, not to documentation.** This
-  doc file mentions `memory_layer_pro` constantly — that's text in
+  doc file mentions `memstrata_pro` constantly — that's text in
   a markdown file, not a Python import. The CI grep checks `.py` and
   `.ts` only.
 

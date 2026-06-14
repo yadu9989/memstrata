@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Memory Layer",
+  "name": "MemStrata",
   "version": "5.3.1",
   "description": "Passive AI response capture and explicit prompt augmentation with project context.",
   "permissions": ["activeTab", "storage", "scripting", "alarms"],
@@ -42,7 +42,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Memory Layer",
+    "default_title": "MemStrata",
     "default_icon": {
       "16": "public/icon-16.png",
       "48": "public/icon-48.png",

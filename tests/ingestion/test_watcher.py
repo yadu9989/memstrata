@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.layer3._db import init_db
-from memory_layer.layer3.ingestion import (
+from memstrata.layer3._db import init_db
+from memstrata.layer3.ingestion import (
     BackfillOrchestrator,
     NoOpEmbedder,
 )
-from memory_layer.layer3.ingestion.orchestrator import record_opt_in
-from memory_layer.layer3.ingestion.watcher import (
+from memstrata.layer3.ingestion.orchestrator import record_opt_in
+from memstrata.layer3.ingestion.watcher import (
     DEBOUNCE_SECONDS,
     CodebaseWatcher,
     NotOptedIn,
@@ -188,7 +188,7 @@ class TestDenylistFilter:
         ).fetchone()[0] == 0
 
     def test_skips_oversize_files(self, conn, tmp_path):
-        from memory_layer.layer3.ingestion.denylist import MAX_FILE_SIZE_BYTES
+        from memstrata.layer3.ingestion.denylist import MAX_FILE_SIZE_BYTES
         proj = _seed_project(tmp_path)
         record_opt_in(conn, proj)
         big = proj / "big.py"

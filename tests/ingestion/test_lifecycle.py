@@ -9,15 +9,15 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from memory_layer.layer3._db import init_db
-from memory_layer.layer3.ingestion import (
+from memstrata.layer3._db import init_db
+from memstrata.layer3.ingestion import (
     IngestionService,
     NoOpEmbedder,
     ProjectRuntime,
     SweepResult,
 )
-from memory_layer.layer3.ingestion.orchestrator import record_opt_in
-from memory_layer.layer3.ingestion.watcher import NotOptedIn
+from memstrata.layer3.ingestion.orchestrator import record_opt_in
+from memstrata.layer3.ingestion.watcher import NotOptedIn
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
 

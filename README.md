@@ -22,16 +22,16 @@ private repository and consumes this package as a PyPI dependency. See
 
 | Path | What it does |
 |---|---|
-| `memory_layer/layer3/api_server.py` | The local daemon's FastAPI app — telemetry, dashboard, MCP routing |
-| `memory_layer/layer3/ingestion/` | File watcher, tree-sitter chunker, opt-in lifecycle, denylists |
-| `memory_layer/layer3/mcp_server.py`, `mcp_app.py` | MCP server (Anthropic-spec) for Claude Desktop / Cursor / etc. |
-| `memory_layer/layer3/_db.py` | SQLite schema with `sqlite-vec` for local vector search |
-| `memory_layer/layer3/retrieval.py` | Token-budgeted context retrieval against the local store |
-| `memory_layer/layer3/pricing/` | Live OpenRouter price sync + bundled static fallback for offline use |
-| `memory_layer/layer3/ollama_health.py` | Shared Ollama reachability probe (used by the dashboard) |
-| `memory_layer/workers/embedding_worker.py` | Background worker that embeds new turns into the vector store |
-| `memory_layer/cli/` | The `memstrata` CLI: `register`, `ingest`, the cd-hook generator |
-| `memory_layer/config/keychain.py` | OS keyring wrapper for storing per-provider API keys |
+| `memstrata/layer3/api_server.py` | The local daemon's FastAPI app — telemetry, dashboard, MCP routing |
+| `memstrata/layer3/ingestion/` | File watcher, tree-sitter chunker, opt-in lifecycle, denylists |
+| `memstrata/layer3/mcp_server.py`, `mcp_app.py` | MCP server (Anthropic-spec) for Claude Desktop / Cursor / etc. |
+| `memstrata/layer3/_db.py` | SQLite schema with `sqlite-vec` for local vector search |
+| `memstrata/layer3/retrieval.py` | Token-budgeted context retrieval against the local store |
+| `memstrata/layer3/pricing/` | Live OpenRouter price sync + bundled static fallback for offline use |
+| `memstrata/layer3/ollama_health.py` | Shared Ollama reachability probe (used by the dashboard) |
+| `memstrata/workers/embedding_worker.py` | Background worker that embeds new turns into the vector store |
+| `memstrata/cli/` | The `memstrata` CLI: `register`, `ingest`, the cd-hook generator |
+| `memstrata/config/keychain.py` | OS keyring wrapper for storing per-provider API keys |
 | `browser-extension/` | Chrome / Edge / Firefox extension that captures chat turns from every major LLM front-end |
 | `migrations/` | SQL migrations |
 | `shared/telemetry_schema.json` | The JSON schema for telemetry events (public contract) |
@@ -42,7 +42,7 @@ private repository and consumes this package as a PyPI dependency. See
 
 ```bash
 pip install memstrata
-python -m memory_layer.cli.main daemon start
+python -m memstrata.cli.main daemon start
 ```
 
 The daemon binds to `127.0.0.1:8000`. Open `http://127.0.0.1:8000/dashboard`
@@ -86,7 +86,7 @@ The dashboard's session-level savings columns compute against a price
 table. By default the daemon syncs the table once per day from
 [OpenRouter](https://openrouter.ai/api/v1/models). When the network is
 down or OpenRouter is unreachable, the bundled
-`memory_layer/layer3/pricing/pricing_matrix.json` provides a static
+`memstrata/layer3/pricing/pricing_matrix.json` provides a static
 fallback. The fallback covers the most common Claude, OpenAI, Gemini,
 DeepSeek, xAI, and Mistral models. Prices in the fallback are
 USD-per-million-tokens, last verified mid-2026.

@@ -32,7 +32,7 @@ def isolated_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def db_conn(tmp_path, isolated_db):
-    from memory_layer.layer3._db import get_db_path, init_db
+    from memstrata.layer3._db import get_db_path, init_db
     path = get_db_path()
     conn = sqlite3.connect(str(path), check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -43,7 +43,7 @@ def db_conn(tmp_path, isolated_db):
 
 @pytest.fixture
 def client(isolated_db):
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
@@ -101,7 +101,7 @@ class TestSchemaMigration:
 
     def test_backfill_enqueues_existing_rows(self, db_conn):
         """Rows present in the timeline must appear in embedding_queue after init_db."""
-        from memory_layer.layer3._db import get_db_path
+        from memstrata.layer3._db import get_db_path
         # Insert two timeline rows via the already-initialised db_conn fixture.
         for turn in (10, 11):
             db_conn.execute(
@@ -115,7 +115,7 @@ class TestSchemaMigration:
         # what happens when migration 012 runs against an existing populated DB.
         db_conn.execute("DELETE FROM embedding_queue")
         db_conn.commit()
-        from memory_layer.layer3._db import _migrate_phase_34
+        from memstrata.layer3._db import _migrate_phase_34
         _migrate_phase_34(db_conn)
 
         count = db_conn.execute("SELECT COUNT(*) FROM embedding_queue").fetchone()[0]
@@ -128,7 +128,7 @@ class TestSchemaMigration:
 
 class TestEnqueueHelper:
     def test_enqueue_inserts_row(self, db_conn):
-        from memory_layer.layer3._db import enqueue_for_embedding
+        from memstrata.layer3._db import enqueue_for_embedding
         db_conn.execute(
             "INSERT INTO telemetry_session_timeline (session_id, turn_id, project_id) VALUES ('s', 1, 'p')"
         )
@@ -149,7 +149,7 @@ class TestEnqueueHelper:
         assert row[2] is None
 
     def test_enqueue_is_idempotent(self, db_conn):
-        from memory_layer.layer3._db import enqueue_for_embedding
+        from memstrata.layer3._db import enqueue_for_embedding
         db_conn.execute(
             "INSERT INTO telemetry_session_timeline (session_id, turn_id, project_id) VALUES ('s', 2, 'p')"
         )
@@ -172,7 +172,7 @@ class TestEnqueueHelper:
 
 class TestIngestEnqueue:
     def test_post_turn_enqueues_timeline_id(self, client):
-        from memory_layer.layer3._db import get_db_path
+        from memstrata.layer3._db import get_db_path
         resp = _post_turn(client)
         assert resp.status_code == 200
 
@@ -190,7 +190,7 @@ class TestIngestEnqueue:
         assert eq is not None, f"timeline_id {tid} was not enqueued after POST /telemetry/session"
 
     def test_upsert_turn_does_not_duplicate_queue_entry(self, client):
-        from memory_layer.layer3._db import get_db_path
+        from memstrata.layer3._db import get_db_path
         # Two POSTs with same message_id → UPSERT → one timeline row, one queue entry
         payload = {
             "session_id": "s_upsert",
@@ -249,8 +249,8 @@ class TestEmbeddingWorker:
         return tid
 
     def test_worker_drains_queue_with_mock_embedding(self, db_conn):
-        from memory_layer.layer3._db import get_db_path
-        from memory_layer.workers.embedding_worker import EmbeddingWorker
+        from memstrata.layer3._db import get_db_path
+        from memstrata.workers.embedding_worker import EmbeddingWorker
 
         tid = self._setup_timeline_row(db_conn)
 
@@ -282,8 +282,8 @@ class TestEmbeddingWorker:
         assert eq_row and eq_row[0] is not None, "Worker should have marked the item completed"
 
     def test_worker_skips_empty_text_rows(self, db_conn):
-        from memory_layer.layer3._db import get_db_path
-        from memory_layer.workers.embedding_worker import EmbeddingWorker
+        from memstrata.layer3._db import get_db_path
+        from memstrata.workers.embedding_worker import EmbeddingWorker
 
         # Insert a row with empty text
         db_conn.execute(
@@ -325,8 +325,8 @@ class TestEmbeddingWorker:
         assert eq_row and eq_row[0], "Empty-text rows should be marked completed (skipped)"
 
     def test_worker_increments_attempts_on_ollama_failure(self, db_conn):
-        from memory_layer.layer3._db import get_db_path
-        from memory_layer.workers.embedding_worker import EmbeddingWorker
+        from memstrata.layer3._db import get_db_path
+        from memstrata.workers.embedding_worker import EmbeddingWorker
 
         tid = self._setup_timeline_row(db_conn, text="this text will fail to embed")
 
@@ -351,8 +351,8 @@ class TestEmbeddingWorker:
         assert eq_row[2] is None, "Item should NOT be marked completed on failure"
 
     def test_worker_stops_retrying_after_max_attempts(self, db_conn):
-        from memory_layer.layer3._db import get_db_path
-        from memory_layer.workers.embedding_worker import EmbeddingWorker
+        from memstrata.layer3._db import get_db_path
+        from memstrata.workers.embedding_worker import EmbeddingWorker
 
         tid = self._setup_timeline_row(db_conn, text="exhausted item")
         # Set attempts to MAX_ATTEMPTS so it's already at the limit
@@ -378,24 +378,24 @@ class TestEmbeddingWorker:
 
 class TestParseRecordedAt:
     def test_space_separator_returns_utc(self):
-        from memory_layer.layer3._db import parse_recorded_at
+        from memstrata.layer3._db import parse_recorded_at
         dt = parse_recorded_at("2026-06-05 02:42:23")
         assert dt.tzinfo is not None
         assert dt.tzinfo == timezone.utc
         assert dt.year == 2026 and dt.month == 6 and dt.day == 5
 
     def test_t_separator_returns_utc(self):
-        from memory_layer.layer3._db import parse_recorded_at
+        from memstrata.layer3._db import parse_recorded_at
         dt = parse_recorded_at("2026-06-05T02:42:23")
         assert dt.tzinfo == timezone.utc
 
     def test_already_aware_passthrough(self):
-        from memory_layer.layer3._db import parse_recorded_at
+        from memstrata.layer3._db import parse_recorded_at
         dt = parse_recorded_at("2026-06-05T02:42:23+00:00")
         assert dt.tzinfo is not None
 
     def test_subtraction_does_not_raise(self):
-        from memory_layer.layer3._db import parse_recorded_at
+        from memstrata.layer3._db import parse_recorded_at
         dt = parse_recorded_at("2026-06-05 02:42:23")
         age = (datetime.now(timezone.utc) - dt).total_seconds()
         assert age >= 0

@@ -89,11 +89,11 @@ Every captured turn is sent to **exactly one** URL:
 http://127.0.0.1:8000/telemetry/session
 ```
 
-No exceptions. The browser-extension's `memory_layer_client.ts`
+No exceptions. The browser-extension's `memstrata_client.ts`
 contains a single fetch URL constant. Search the source:
 
 ```bash
-grep -rn "fetch(" browser-extension/src/content/shared/memory_layer_client.ts
+grep -rn "fetch(" browser-extension/src/content/shared/memstrata_client.ts
 ```
 
 You'll see the localhost endpoint and nothing else.
@@ -114,7 +114,7 @@ to loopback for captures:
 
 ### 1. Read the source
 
-[`browser-extension/src/content/shared/memory_layer_client.ts`](../browser-extension/src/content/shared/memory_layer_client.ts)
+[`browser-extension/src/content/shared/memstrata_client.ts`](../browser-extension/src/content/shared/memstrata_client.ts)
 is the entire HTTP layer the content script uses. It's ~150 lines.
 The base URL is a single constant. The two non-localhost calls are
 inert in the Open-only configuration (the augmentation flow's

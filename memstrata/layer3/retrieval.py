@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 import requests
 
-from memory_layer.layer3._db import parse_recorded_at
+from memstrata.layer3._db import parse_recorded_at
 
 _logger = logging.getLogger(__name__)
 

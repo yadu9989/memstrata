@@ -37,7 +37,7 @@ const COMMANDS: NLCommand[] = [
     ],
     destructive: true,
     confirmationLevel: 'single',
-    description: 'Delete all Memory Layer data for this chat session',
+    description: 'Delete all MemStrata data for this chat session',
     async execute(ctx) {
       if (!ctx.chatSessionId) return;
       await fetch(`${BASE_URL}/chat-session/delete`, {
@@ -59,7 +59,7 @@ const COMMANDS: NLCommand[] = [
     ],
     destructive: true,
     confirmationLevel: 'double',
-    description: 'Delete ALL Memory Layer data across all chats and providers',
+    description: 'Delete ALL MemStrata data across all chats and providers',
     async execute(_ctx) {
       await fetch(`${BASE_URL}/memory/delete-all`, { method: 'POST' });
     },
@@ -73,7 +73,7 @@ const COMMANDS: NLCommand[] = [
     ],
     destructive: false,
     confirmationLevel: 'single',
-    description: 'Disable Memory Layer for the rest of this browser session',
+    description: 'Disable MemStrata for the rest of this browser session',
     async execute(_ctx) {
       if (typeof chrome !== 'undefined' && chrome.storage?.session) {
         await chrome.storage.session.set({ memoryLayerPaused: true });
@@ -89,7 +89,7 @@ const COMMANDS: NLCommand[] = [
     ],
     destructive: false,
     confirmationLevel: 'single',
-    description: 'Open the Memory Layer side panel showing saved context',
+    description: 'Open the MemStrata side panel showing saved context',
     async execute(_ctx) {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.sendMessage({ type: 'open_side_panel' });

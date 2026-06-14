@@ -1,14 +1,14 @@
-"""SQLite database layer for the Memory Layer MIT core.
+"""SQLite database layer for the MemStrata MIT core.
 
 Schema combines the base tables with migration 011 (V5.4 chat sessions) so the
 server can be started against a fresh database without running separate migration
 scripts. Plan-tier and Stripe-linkage tables are created by Pro overlay's
-``memory_layer_pro.pro_schema`` per the V5.2-E E.1 untangling.
+``memstrata_pro.pro_schema`` per the V5.2-E E.1 untangling.
 
 DB path resolution order:
   1. ML_DB_PATH environment variable  (used for test isolation)
-  2. ML_DATA_DIR environment variable / ".memory-layer" subdirectory
-  3. Default: ~/.memory-layer/core.db
+  2. ML_DATA_DIR environment variable / ".memstrata" subdirectory
+  3. Default: ~/.memstrata/core.db
 """
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ def get_db_path() -> Path:
     if env:
         return Path(env)
     base_env = os.environ.get("ML_DATA_DIR")
-    base = Path(base_env) if base_env else Path.home() / ".memory-layer"
+    base = Path(base_env) if base_env else Path.home() / ".memstrata"
     base.mkdir(parents=True, exist_ok=True)
     return base / "core.db"
 
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- V5.2-E E.1: the Pro tables (`plan_features`, `stripe_customers`) and
 -- the `current_plan` settings seed previously lived here. They moved to
--- `memory_layer_pro/pro_schema.py`, applied at Pro overlay mount time.
+-- `memstrata_pro/pro_schema.py`, applied at Pro overlay mount time.
 """
 
 

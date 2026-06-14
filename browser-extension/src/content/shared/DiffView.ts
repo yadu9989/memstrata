@@ -10,7 +10,7 @@
 
 import type { RewriteResult } from './RewriteEngine.js';
 
-const HOST_ID = 'memory-layer-diff-view-root';
+const HOST_ID = 'memstrata-diff-view-root';
 
 const STYLES = `
   :host { all: initial; }

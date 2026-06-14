@@ -86,7 +86,7 @@ def _fetch_boc() -> FxRate | None:
                 # BoC's WAF doesn't block default urllib, but pinning a
                 # UA makes the request explicitly attributable in their
                 # logs and prevents future WAF rules from blocking us.
-                "user-agent": "memory-layer-pro/0.6.0 (+https://memstrata.dev)",
+                "user-agent": "memstrata-pro/0.6.0 (+https://memstrata.dev)",
             },
         )
         ctx = _build_ssl_context()

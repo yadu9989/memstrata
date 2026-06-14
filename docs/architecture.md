@@ -78,17 +78,17 @@ chat (e.g. `claude.ai`); the extension never proxies those requests.
 
 | Path | What's in it |
 |---|---|
-| `memory_layer/layer3/api_server.py` | The FastAPI app. Mounts `/mcp` (MCP server), serves `/dashboard`, exposes `/telemetry/session`, `/api/dashboard/*`, `/context/*`, `/baseline/status`, and the indexing-progress endpoints. ~3,300 lines. |
-| `memory_layer/layer3/_db.py` | Schema + connection management. Idempotent `init_db`. Path resolution via `ML_DB_PATH` → `ML_DATA_DIR` → `~/.memstrata/core.db`. Loads the `sqlite-vec` extension. |
-| `memory_layer/layer3/mcp_app.py` | The MCP server (FastMCP over Streamable HTTP). Registers five tools. |
-| `memory_layer/layer3/mcp_server.py` | The CLI entry that runs the MCP server standalone (when not mounted under the daemon). |
-| `memory_layer/layer3/retrieval.py` | Token-budgeted retrieval against the local store. Used by `/context/*` routes. |
-| `memory_layer/layer3/ingestion/` | The codebase ingestion subsystem. File watcher, tree-sitter chunker, lifecycle (opt-in/opt-out), denylist, resource-policy gate (battery / RAM limits), branch-switch detection, progress tracking. |
-| `memory_layer/layer3/pricing/` | Live OpenRouter sync (`openrouter_sync.py`), per-model rate lookup (`lookup.py`), and the bundled static fallback (`pricing_matrix.json`). |
-| `memory_layer/layer3/ollama_health.py` | Shared sync + async probe of `localhost:11434`. Never raises (the polling loop depends on that). |
-| `memory_layer/workers/embedding_worker.py` | Background worker that pulls newly-captured turns out of a queue, embeds them, and writes the vectors into the `sqlite-vec` virtual table. |
-| `memory_layer/cli/` | The `memstrata` CLI: `register` (opt a project into ingestion), `ingest` (one-shot full-tree pass), and the cd-hook generator (`cd_hook.py`). |
-| `memory_layer/config/keychain.py` | OS keyring wrapper for storing per-provider API keys. Talks to Windows Credential Manager, macOS Keychain, or Linux secret-service. |
+| `memstrata/layer3/api_server.py` | The FastAPI app. Mounts `/mcp` (MCP server), serves `/dashboard`, exposes `/telemetry/session`, `/api/dashboard/*`, `/context/*`, `/baseline/status`, and the indexing-progress endpoints. ~3,300 lines. |
+| `memstrata/layer3/_db.py` | Schema + connection management. Idempotent `init_db`. Path resolution via `ML_DB_PATH` → `ML_DATA_DIR` → `~/.memstrata/core.db`. Loads the `sqlite-vec` extension. |
+| `memstrata/layer3/mcp_app.py` | The MCP server (FastMCP over Streamable HTTP). Registers five tools. |
+| `memstrata/layer3/mcp_server.py` | The CLI entry that runs the MCP server standalone (when not mounted under the daemon). |
+| `memstrata/layer3/retrieval.py` | Token-budgeted retrieval against the local store. Used by `/context/*` routes. |
+| `memstrata/layer3/ingestion/` | The codebase ingestion subsystem. File watcher, tree-sitter chunker, lifecycle (opt-in/opt-out), denylist, resource-policy gate (battery / RAM limits), branch-switch detection, progress tracking. |
+| `memstrata/layer3/pricing/` | Live OpenRouter sync (`openrouter_sync.py`), per-model rate lookup (`lookup.py`), and the bundled static fallback (`pricing_matrix.json`). |
+| `memstrata/layer3/ollama_health.py` | Shared sync + async probe of `localhost:11434`. Never raises (the polling loop depends on that). |
+| `memstrata/workers/embedding_worker.py` | Background worker that pulls newly-captured turns out of a queue, embeds them, and writes the vectors into the `sqlite-vec` virtual table. |
+| `memstrata/cli/` | The `memstrata` CLI: `register` (opt a project into ingestion), `ingest` (one-shot full-tree pass), and the cd-hook generator (`cd_hook.py`). |
+| `memstrata/config/keychain.py` | OS keyring wrapper for storing per-provider API keys. Talks to Windows Credential Manager, macOS Keychain, or Linux secret-service. |
 | `browser-extension/` | Chrome/Edge/Firefox extension (Manifest V3, TypeScript, esbuild). Universal content script + per-provider detector chain. |
 | `migrations/` | SQL migrations applied on top of `_db.py`'s base schema. |
 | `shared/telemetry_schema.json` | JSON schema for telemetry events. Public contract — other tools can validate against it. |
@@ -144,7 +144,7 @@ local AI, but the dashboard, MCP server, and chat capture still work."
 1. An MCP client (Claude Desktop, Cursor) calls one of the five tools
    over `/mcp`.
 2. The tool implementation queries `_db` and/or
-   `memory_layer.layer3.retrieval` for a token-budgeted result.
+   `memstrata.layer3.retrieval` for a token-budgeted result.
 3. JSON response goes back through the MCP protocol.
 
 The dashboard at `/dashboard` is the same retrieval path, just served

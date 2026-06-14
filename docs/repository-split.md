@@ -71,9 +71,9 @@ public one. The discipline to keep the API clean is procedural again.
 ```
               Open (MIT, this repo)              Pro (proprietary)
               ─────────────────────              ─────────────────
-              memory_layer/             ◀───────── memstrata-pro/
+              memstrata/             ◀───────── memstrata-pro/
               browser-extension/                   harness/
-              memory_layer/layer3/                 packaging/
+              memstrata/layer3/                 packaging/
                 api_server.py:                     extension/ (VS Code)
                   app.state.cohort_api  ◀───── injected by Pro overlay
                   app.state.dashboard_extras
@@ -93,11 +93,11 @@ The Open daemon is fully functional standalone:
 
 - The FastAPI `app` runs without modification
 - Every Pro-specific behavior has a NoOp default in Open (see
-  `_NoOpCohortApi` in `memory_layer/layer3/api_server.py`)
+  `_NoOpCohortApi` in `memstrata/layer3/api_server.py`)
 - The dashboard renders Now + Quality tabs; the Money tab requires
   Pro
 
-When the Pro tier is installed, `memory_layer_pro.api_overlay.mount(app)`
+When the Pro tier is installed, `memstrata_pro.api_overlay.mount(app)`
 runs at daemon startup and:
 
 - Replaces `app.state.cohort_api` with a real implementation
@@ -138,7 +138,7 @@ that's the whole point of the dependency direction.
 
 ```bash
 pip install memstrata
-python -m memory_layer.cli.main daemon start
+python -m memstrata.cli.main daemon start
 ```
 
 That gives you:

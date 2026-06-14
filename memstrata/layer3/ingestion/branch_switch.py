@@ -28,14 +28,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from memory_layer.layer3.ingestion.chunker import detect_language
-from memory_layer.layer3.ingestion.denylist import (
+from memstrata.layer3.ingestion.chunker import detect_language
+from memstrata.layer3.ingestion.denylist import (
     ProjectSkipPolicy,
     load_gitignore,
     should_index,
     should_walk_dir,
 )
-from memory_layer.layer3.ingestion.watcher import (
+from memstrata.layer3.ingestion.watcher import (
     Embedder,
     ReindexResult,
     reindex_file,

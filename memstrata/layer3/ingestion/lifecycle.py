@@ -28,14 +28,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from memory_layer.layer3._db import init_db
-from memory_layer.layer3.ingestion.branch_switch import (
+from memstrata.layer3._db import init_db
+from memstrata.layer3.ingestion.branch_switch import (
     SweepResult,
     sweep_branch_switch,
 )
-from memory_layer.layer3.ingestion.denylist import ProjectSkipPolicy
-from memory_layer.layer3.ingestion.resource_policy import ResourcePolicy
-from memory_layer.layer3.ingestion.watcher import (
+from memstrata.layer3.ingestion.denylist import ProjectSkipPolicy
+from memstrata.layer3.ingestion.resource_policy import ResourcePolicy
+from memstrata.layer3.ingestion.watcher import (
     CodebaseWatcher,
     Embedder,
     NotOptedIn,

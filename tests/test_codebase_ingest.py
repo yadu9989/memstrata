@@ -29,7 +29,7 @@ def isolated_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(isolated_db):
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
@@ -68,14 +68,14 @@ def sample_repo(tmp_path):
 
 class TestWalker:
     def test_iter_skips_node_modules(self, sample_repo):
-        from memory_layer.cli.ingest import iter_source_files
+        from memstrata.cli.ingest import iter_source_files
         rels = sorted(r.rel for r in iter_source_files(sample_repo))
         assert "README.md" in rels
         assert "main.py" in rels
         assert all("node_modules" not in r for r in rels), rels
 
     def test_chunk_text_splits_on_whitespace(self):
-        from memory_layer.cli.ingest import CHUNK_CHARS, chunk_text
+        from memstrata.cli.ingest import CHUNK_CHARS, chunk_text
         text = ("hello world " * 1000).strip()
         chunks = chunk_text(text, chunk_chars=200)
         assert len(chunks) > 1
@@ -84,7 +84,7 @@ class TestWalker:
             assert not c.endswith("hell")
 
     def test_chunk_text_empty(self):
-        from memory_layer.cli.ingest import chunk_text
+        from memstrata.cli.ingest import chunk_text
         assert chunk_text("") == []
         assert chunk_text("   \n\t  ") == []
 
@@ -95,7 +95,7 @@ class TestWalker:
 
 class TestIngestProject:
     def test_first_run_indexes_files_without_embed(self, sample_repo, isolated_db):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         s = ingest_project(sample_repo, embed=False)
         assert s.files_indexed == 2
         assert s.files_unchanged == 0
@@ -104,7 +104,7 @@ class TestIngestProject:
         assert s.tokens_total > 0
 
     def test_rerun_unchanged_is_noop(self, sample_repo, isolated_db):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False)
         s2 = ingest_project(sample_repo, embed=False)
         assert s2.files_indexed == 0
@@ -112,7 +112,7 @@ class TestIngestProject:
         assert s2.chunks_written == 0
 
     def test_changed_file_is_reindexed(self, sample_repo, isolated_db):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False)
         (sample_repo / "main.py").write_text(
             "def changed():\n    return 'updated'\n", encoding="utf-8"
@@ -122,7 +122,7 @@ class TestIngestProject:
         assert s2.files_unchanged == 1
 
     def test_rows_land_in_correct_tables(self, sample_repo, isolated_db, tmp_path):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False, project_id="myproj")
         conn = sqlite3.connect(str(tmp_path / "test_core.db"))
         conn.row_factory = sqlite3.Row
@@ -154,7 +154,7 @@ class TestContextInjectionEndpoint:
         assert d["raw_codebase_tokens"] is None
 
     def test_returns_real_block_after_ingest(self, sample_repo, client):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False, project_id="myproj")
 
         r = client.get("/context/injection", params={"project_id": "myproj"})
@@ -171,7 +171,7 @@ class TestContextInjectionEndpoint:
     def test_block_hash_is_stable(self, sample_repo, client):
         """Hard Rule 50: same on-disk content -> same hash, so the harness's
         FRESH_FULL / SKIP / APPEND_DELTA path works (prefix-cache stays warm)."""
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False, project_id="stable")
 
         h1 = client.get("/context/injection", params={"project_id": "stable"}).json()["block_hash"]
@@ -179,7 +179,7 @@ class TestContextInjectionEndpoint:
         assert h1 == h2
 
     def test_block_hash_changes_when_content_changes(self, sample_repo, client):
-        from memory_layer.cli.ingest import ingest_project
+        from memstrata.cli.ingest import ingest_project
         ingest_project(sample_repo, embed=False, project_id="moving")
         h1 = client.get("/context/injection", params={"project_id": "moving"}).json()["block_hash"]
 

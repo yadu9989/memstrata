@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from memory_layer.layer3.ingestion.resource_policy import (
+from memstrata.layer3.ingestion.resource_policy import (
     BatteryState,
     ResourcePolicy,
 )

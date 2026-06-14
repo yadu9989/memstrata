@@ -21,7 +21,7 @@ import { StreamWatcher } from './engine/StreamWatcher';
 import { Telemetry } from './engine/Telemetry';
 import { ConfigLoader } from './config/ConfigLoader';
 import type { ProviderHints } from './engine/types';
-import { recordChatTurn, getStoredProjectId } from './shared/memory_layer_client';
+import { recordChatTurn, getStoredProjectId } from './shared/memstrata_client';
 import { getExternalSessionId } from './engine/SessionDetector';
 // Phase 32: NL command interceptor (Hard Rule 66)
 import { NLCommandDetector } from './shared/NLCommandDetector';
@@ -31,8 +31,8 @@ import { isFeatureActive } from '../shared/FeatureGate';
 // Phase 34: augmenter UI (floating button) + rewrite mode
 import { setReactInputValue, getAugmenterUI, findPromptElement } from './shared/augmenter';
 import type { AugmenterUI } from './shared/augmenter';
-import { fetchContext, fetchBaselineStatus } from './shared/memory_layer_client';
-import type { ContextBlock } from './shared/memory_layer_client';
+import { fetchContext, fetchBaselineStatus } from './shared/memstrata_client';
+import type { ContextBlock } from './shared/memstrata_client';
 import { TurnExtractor } from './engine/TurnExtractor';
 import { StreamInterceptorBridge } from './engine/StreamInterceptorBridge';
 

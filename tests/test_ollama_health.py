@@ -1,4 +1,4 @@
-"""V5.2-C Phase C.8 — coverage for memory_layer.layer3.ollama_health.
+"""V5.2-C Phase C.8 — coverage for memstrata.layer3.ollama_health.
 
 Mirrors the acceptance list in V5_2_C_ADDENDUM.md §9.1:
 
@@ -28,7 +28,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from memory_layer.layer3.ollama_health import (
+from memstrata.layer3.ollama_health import (
     OllamaHealth,
     OllamaStatus,
     _classify,
@@ -68,7 +68,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_unreachable_returns_unreachable(self):
         """When localhost:11434 doesn't respond, status is UNREACHABLE."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             side_effect=urllib.error.URLError("connection refused"),
         ):
             result = check_ollama_sync()
@@ -79,7 +79,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_unreachable_on_timeout(self):
         """TimeoutError counted as UNREACHABLE."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             side_effect=TimeoutError("slow"),
         ):
             result = check_ollama_sync()
@@ -88,7 +88,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_unreachable_on_non_200(self):
         """Non-200 response counts as UNREACHABLE per Hard Rule 80."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(b"", status=503),
         ):
             result = check_ollama_sync()
@@ -98,7 +98,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_running_no_models_returns_running_no_models(self):
         """When /api/tags returns an empty models list."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(_tags_body([])),
         ):
             result = check_ollama_sync()
@@ -108,7 +108,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_running_wrong_model_returns_running_wrong_model(self):
         """When /api/tags has models but not the configured one."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(_tags_body(["llama3:8b", "phi3:mini"])),
         ):
             result = check_ollama_sync(configured_model="qwen2.5-coder:7b")
@@ -118,7 +118,7 @@ class TestOllamaSyncStatusClassification:
     def test_ollama_running_with_configured_model_returns_ready(self):
         """Happy path: configured model is in /api/tags response."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(_tags_body([
                 "qwen2.5-coder:7b", "nomic-embed-text:latest",
             ])),
@@ -133,7 +133,7 @@ class TestOllamaSyncMalformedPayloads:
     def test_malformed_json_treated_as_no_models(self):
         """Bad JSON from a 200 response → empty models list, no crash."""
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(b"{not valid json"),
         ):
             result = check_ollama_sync()
@@ -142,7 +142,7 @@ class TestOllamaSyncMalformedPayloads:
 
     def test_models_key_missing_treated_as_no_models(self):
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(b'{"version": "1.0"}'),
         ):
             result = check_ollama_sync()
@@ -157,7 +157,7 @@ class TestOllamaSyncMalformedPayloads:
             {"name": "ok:2"},
         ]}).encode("utf-8")
         with patch(
-            "memory_layer.layer3.ollama_health.urllib.request.urlopen",
+            "memstrata.layer3.ollama_health.urllib.request.urlopen",
             return_value=_FakeResponse(body),
         ):
             result = check_ollama_sync()
@@ -225,7 +225,7 @@ class TestLifespanNonBlocking:
         """
         from fastapi.testclient import TestClient
 
-        import memory_layer.layer3.api_server as srv
+        import memstrata.layer3.api_server as srv
 
         start = time.monotonic()
         with TestClient(srv.app):

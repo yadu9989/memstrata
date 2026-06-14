@@ -32,7 +32,7 @@ from pathlib import Path
 
 import requests
 
-from memory_layer.layer3._db import _load_vec_extension, get_db_path, init_db
+from memstrata.layer3._db import _load_vec_extension, get_db_path, init_db
 
 _logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ _SKIP_DIRS = {
     "dist", "build", "out", "target", ".next",
     ".tox", ".cache", "coverage",
     ".idea", ".vscode",
-    ".memory-layer", ".memory-layer-pro",
+    ".memstrata", ".memstrata-pro",
 }
 
 # Files we never read even if they have an included suffix.
@@ -310,8 +310,8 @@ def ingest_project(
 ) -> IngestSummary:
     """Walk *root*, ingest changed source files into the codebase tables.
 
-    project_id defaults to the basename of *root* (so memory-layer-pro/
-    becomes "memory-layer-pro"). Pass an explicit value when the harness or
+    project_id defaults to the basename of *root* (so memstrata-pro/
+    becomes "memstrata-pro"). Pass an explicit value when the harness or
     extension uses a different identifier.
     """
     start = time.time()
@@ -395,7 +395,7 @@ def ingest_project(
 # ---------------------------------------------------------------------------
 
 def cmd_ingest(args: argparse.Namespace) -> None:
-    """Entry point for `memory-layer ingest <path>`."""
+    """Entry point for `memstrata ingest <path>`."""
     root = Path(args.path).expanduser().resolve()
     if not root.exists():
         print(f"ingest: path does not exist: {root}", file=sys.stderr)
@@ -405,9 +405,9 @@ def cmd_ingest(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
-    print(f"[memory-layer ingest] root: {root}")
-    print(f"[memory-layer ingest] project_id: {args.project_id or root.name}")
-    print(f"[memory-layer ingest] embed: {not args.no_embed}")
+    print(f"[memstrata ingest] root: {root}")
+    print(f"[memstrata ingest] project_id: {args.project_id or root.name}")
+    print(f"[memstrata ingest] embed: {not args.no_embed}")
     print()
 
     summary = ingest_project(

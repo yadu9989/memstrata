@@ -8,7 +8,7 @@
 
 import type { NLCommand } from './NLCommandDetector.js';
 
-const HOST_ID = 'memory-layer-nl-confirm-root';
+const HOST_ID = 'memstrata-nl-confirm-root';
 
 const STYLES = `
   :host { all: initial; }
@@ -115,11 +115,11 @@ export class NLCommandConfirmDialog {
 
       const badge = document.createElement('div');
       badge.id = 'ml-badge';
-      badge.textContent = 'Memory Layer';
+      badge.textContent = 'MemStrata';
 
       const title = document.createElement('div');
       title.id = 'ml-title';
-      title.textContent = cmd.destructive ? 'Confirm destructive action' : 'Memory Layer command';
+      title.textContent = cmd.destructive ? 'Confirm destructive action' : 'MemStrata command';
 
       const desc = document.createElement('div');
       desc.id = 'ml-desc';

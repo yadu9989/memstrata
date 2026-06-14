@@ -50,12 +50,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from memory_layer.layer3.ingestion.chunker import (
+from memstrata.layer3.ingestion.chunker import (
     Chunk,
     chunk_file,
     detect_language,
 )
-from memory_layer.layer3.ingestion.denylist import (
+from memstrata.layer3.ingestion.denylist import (
     ProjectSkipPolicy,
     load_gitignore,
     should_index,

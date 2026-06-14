@@ -21,8 +21,8 @@ function setBadge(connected: boolean): void {
   chrome.action.setBadgeBackgroundColor({ color: connected ? '#10b981' : '#ef4444' });
   chrome.action.setTitle({
     title: connected
-      ? 'Memory Layer — connected'
-      : 'Memory Layer — offline (start localhost:8000)',
+      ? 'MemStrata — connected'
+      : 'MemStrata — offline (start localhost:8000)',
   });
 }
 

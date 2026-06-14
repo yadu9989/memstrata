@@ -12,18 +12,18 @@ Hard Rules in scope:
 """
 from __future__ import annotations
 
-from memory_layer.layer3.ingestion.branch_switch import (
+from memstrata.layer3.ingestion.branch_switch import (
     SweepResult,
     sweep_branch_switch,
 )
-from memory_layer.layer3.ingestion.chunker import (
+from memstrata.layer3.ingestion.chunker import (
     Chunk,
     chunk_file,
     chunk_source,
     detect_language,
     stable_hash,
 )
-from memory_layer.layer3.ingestion.denylist import (
+from memstrata.layer3.ingestion.denylist import (
     DENY_FILE_BASENAMES,
     DENY_FILE_EXTENSIONS,
     HARDCODED_DENYLIST,
@@ -35,24 +35,24 @@ from memory_layer.layer3.ingestion.denylist import (
     should_index,
     should_walk_dir,
 )
-from memory_layer.layer3.ingestion.lifecycle import (
+from memstrata.layer3.ingestion.lifecycle import (
     IngestionService,
     ProjectRuntime,
 )
-from memory_layer.layer3.ingestion.orchestrator import (
+from memstrata.layer3.ingestion.orchestrator import (
     BackfillOrchestrator,
     JobPhase,
     JobState,
     NoOpEmbedder,
     OptInRequired,
 )
-from memory_layer.layer3.ingestion.progress import (
+from memstrata.layer3.ingestion.progress import (
     CONTROL_REGISTRY,
     ControlState,
     ProgressSnapshot,
     build_snapshot,
 )
-from memory_layer.layer3.ingestion.resource_policy import (
+from memstrata.layer3.ingestion.resource_policy import (
     BatteryState,
     ResourcePolicy,
     apply_cpu_priority,
@@ -60,7 +60,7 @@ from memory_layer.layer3.ingestion.resource_policy import (
     detect_battery_state,
     detect_idle_seconds,
 )
-from memory_layer.layer3.ingestion.watcher import (
+from memstrata.layer3.ingestion.watcher import (
     CodebaseWatcher,
     NotOptedIn,
     ReindexResult,

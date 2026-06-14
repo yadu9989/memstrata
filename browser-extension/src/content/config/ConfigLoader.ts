@@ -25,7 +25,7 @@ export class ConfigLoader {
       }
 
       const res = await fetch(
-        `https://config.memory-layer.io/provider_hints.json?v=${SCHEMA_VERSION}`,
+        `https://config.memstrata.io/provider_hints.json?v=${SCHEMA_VERSION}`,
       );
       if (!res.ok) return;
 

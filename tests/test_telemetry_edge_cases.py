@@ -31,7 +31,7 @@ def isolated_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(isolated_db):
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
@@ -77,7 +77,7 @@ def _telemetry_row(db_conn: sqlite3.Connection) -> sqlite3.Row:
 class TestValidationFunction:
     @pytest.fixture(autouse=True)
     def _import(self):
-        from memory_layer.layer3._db import is_valid_external_session_id
+        from memstrata.layer3._db import is_valid_external_session_id
         self.valid = is_valid_external_session_id
 
     def test_uuid_style_accepted(self):
@@ -314,7 +314,7 @@ class TestUpsertIdempotency:
 
     def test_upsert_function_idempotency_direct(self, tmp_path):
         """Call upsert_chat_session N times sequentially — all must return the same ID."""
-        from memory_layer.layer3._db import init_db, upsert_chat_session
+        from memstrata.layer3._db import init_db, upsert_chat_session
 
         db_path = str(tmp_path / "idem.db")
         conn = sqlite3.connect(db_path, timeout=10.0)
@@ -333,7 +333,7 @@ class TestUpsertIdempotency:
 class TestConcurrentUpsert:
     def test_concurrent_upsert_produces_single_row(self, tmp_path):
         """N threads all upsert the same (provider, ext_id) — exactly one row results."""
-        from memory_layer.layer3._db import init_db, upsert_chat_session
+        from memstrata.layer3._db import init_db, upsert_chat_session
 
         db_path = str(tmp_path / "conc.db")
 
@@ -385,7 +385,7 @@ class TestConcurrentUpsert:
 
     def test_concurrent_distinct_sessions_no_cross_contamination(self, tmp_path):
         """N threads each upsert a DIFFERENT session — N distinct rows must result."""
-        from memory_layer.layer3._db import init_db, upsert_chat_session
+        from memstrata.layer3._db import init_db, upsert_chat_session
 
         db_path = str(tmp_path / "conc2.db")
         setup = sqlite3.connect(db_path, timeout=10.0)

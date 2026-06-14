@@ -1,4 +1,4 @@
-"""Tests for memory_layer.layer3.ingestion.orchestrator (V5.2-A Phase 35.2)."""
+"""Tests for memstrata.layer3.ingestion.orchestrator (V5.2-A Phase 35.2)."""
 from __future__ import annotations
 
 import os
@@ -9,15 +9,15 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.layer3._db import init_db
-from memory_layer.layer3.ingestion import (
+from memstrata.layer3._db import init_db
+from memstrata.layer3.ingestion import (
     BackfillOrchestrator,
     JobPhase,
     JobState,
     NoOpEmbedder,
     OptInRequired,
 )
-from memory_layer.layer3.ingestion.orchestrator import record_opt_in
+from memstrata.layer3.ingestion.orchestrator import record_opt_in
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
 

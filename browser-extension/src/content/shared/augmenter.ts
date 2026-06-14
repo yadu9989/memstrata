@@ -12,8 +12,8 @@
 //   becomes visible after the user types; injection happens only on explicit
 //   button click. No auto-augmentation, no silent mutation.
 
-import type { ContextBlock, BaselineStatus } from './memory_layer_client.js';
-import { recordRewriteTelemetry } from './memory_layer_client.js';
+import type { ContextBlock, BaselineStatus } from './memstrata_client.js';
+import { recordRewriteTelemetry } from './memstrata_client.js';
 import { RewriteEngine } from './RewriteEngine.js';
 import { DiffView } from './DiffView.js';
 
@@ -179,7 +179,7 @@ function lockSubmitButton(): () => void {
 
 // ─── Shadow-DOM floating button + banner ──────────────────────────────────────
 
-const SHADOW_HOST_ID = 'memory-layer-augmenter-root';
+const SHADOW_HOST_ID = 'memstrata-augmenter-root';
 
 const BUTTON_STYLES = `
   :host { all: initial; }
@@ -284,7 +284,7 @@ export class AugmenterUI {
     this.btn = document.createElement('button');
     this.btn.id = 'ml-btn';
     this.btn.textContent = '＋ Add project context';
-    this.btn.setAttribute('aria-label', 'Add Memory Layer project context to prompt');
+    this.btn.setAttribute('aria-label', 'Add MemStrata project context to prompt');
 
     this.banner = document.createElement('div');
     this.banner.id = 'ml-banner';
@@ -424,7 +424,7 @@ export class AugmenterUI {
         const days = baselineStatus.days_remaining;
         this.baselineMsg.textContent =
           days != null
-            ? `Baseline week: ${days} day${days !== 1 ? 's' : ''} left — Memory Layer is measuring without injecting`
+            ? `Baseline week: ${days} day${days !== 1 ? 's' : ''} left — MemStrata is measuring without injecting`
             : 'Baseline week in progress — measuring without injecting';
         this.baselineMsg.classList.add('visible');
         this.btn.style.display = 'none';
@@ -541,7 +541,7 @@ export class AugmenterUI {
     this.banner.innerHTML = '';
 
     const msg = document.createTextNode(
-      `Memory Layer added project state (${ctx.token_count.toLocaleString()} tokens) — `,
+      `MemStrata added project state (${ctx.token_count.toLocaleString()} tokens) — `,
     );
     this.banner.appendChild(msg);
 

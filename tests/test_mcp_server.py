@@ -5,7 +5,7 @@ Two layers of coverage:
   1. Tool functions called directly — exercises SQL queries + return shapes
   2. HTTP integration — boots the FastAPI app, mounts MCP at /mcp, and runs a
      real initialize → tools/list → tools/call protocol sequence over HTTP
-     to prove that `claude mcp add --transport http memory-layer
+     to prove that `claude mcp add --transport http memstrata
      http://localhost:8000/mcp` will actually work end-to-end.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ def isolated_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(isolated_db):
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
@@ -87,7 +87,7 @@ def _seed_turns(client: TestClient) -> None:
 class TestToolFunctionsDirect:
     def test_get_context_returns_recent_turns(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_get_context
+        from memstrata.layer3.mcp_app import tool_get_context
         result = tool_get_context(project_id="demo_proj", limit=10)
         assert result["project_id"] == "demo_proj"
         assert result["count"] >= 2
@@ -96,14 +96,14 @@ class TestToolFunctionsDirect:
         assert any("conditional types" in t for t in texts)
 
     def test_get_context_empty_project(self, client):
-        from memory_layer.layer3.mcp_app import tool_get_context
+        from memstrata.layer3.mcp_app import tool_get_context
         result = tool_get_context(project_id="nonexistent", limit=10)
         assert result["count"] == 0
         assert result["turns"] == []
 
     def test_list_chat_sessions_returns_seeded_session(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_list_chat_sessions
+        from memstrata.layer3.mcp_app import tool_list_chat_sessions
         result = tool_list_chat_sessions(limit=20)
         assert result["count"] >= 1
         ext_ids = [s["external_session_id"] for s in result["sessions"]]
@@ -111,7 +111,7 @@ class TestToolFunctionsDirect:
 
     def test_get_chat_history_returns_dialogue(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_get_chat_history, tool_list_chat_sessions
+        from memstrata.layer3.mcp_app import tool_get_chat_history, tool_list_chat_sessions
         sessions = tool_list_chat_sessions(limit=20)["sessions"]
         match = next(s for s in sessions if s["external_session_id"] == "ext-chat-aaa")
         cs_id = match["chat_session_id"]
@@ -125,14 +125,14 @@ class TestToolFunctionsDirect:
         assert history["turns"][1]["turn_id"] == 2
 
     def test_get_chat_history_unknown_id_returns_error(self, client):
-        from memory_layer.layer3.mcp_app import tool_get_chat_history
+        from memstrata.layer3.mcp_app import tool_get_chat_history
         result = tool_get_chat_history(chat_session_id="cs_nope_xxx", limit=10)
         assert result["count"] == 0
         assert result["error"] == "chat_session_id not found"
 
     def test_search_memory_substring_match(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_search_memory
+        from memstrata.layer3.mcp_app import tool_search_memory
         result = tool_search_memory(query="generics", limit=10)
         assert result["count"] >= 1
         assert any("generics" in m["text"].lower() for m in result["matches"])
@@ -141,7 +141,7 @@ class TestToolFunctionsDirect:
 
     def test_search_memory_case_insensitive(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_search_memory
+        from memstrata.layer3.mcp_app import tool_search_memory
         upper = tool_search_memory(query="TYPESCRIPT", limit=10)
         lower = tool_search_memory(query="typescript", limit=10)
         assert upper["count"] == lower["count"]
@@ -149,7 +149,7 @@ class TestToolFunctionsDirect:
 
     def test_search_memory_project_scope(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_search_memory
+        from memstrata.layer3.mcp_app import tool_search_memory
         scoped = tool_search_memory(query="generics", project_id="demo_proj", limit=10)
         unscoped = tool_search_memory(query="generics", project_id=None, limit=10)
         assert scoped["count"] == unscoped["count"]  # all rows live in demo_proj here
@@ -158,14 +158,14 @@ class TestToolFunctionsDirect:
         assert miss["count"] == 0
 
     def test_search_memory_empty_query(self, client):
-        from memory_layer.layer3.mcp_app import tool_search_memory
+        from memstrata.layer3.mcp_app import tool_search_memory
         result = tool_search_memory(query="   ", limit=10)
         assert result["count"] == 0
         assert result["error"] == "empty_query"
 
     def test_get_dashboard_stats_shape(self, client):
         _seed_turns(client)
-        from memory_layer.layer3.mcp_app import tool_get_dashboard_stats
+        from memstrata.layer3.mcp_app import tool_get_dashboard_stats
         result = tool_get_dashboard_stats()
         for key in (
             "sessions", "turns", "injected_turns", "cache_hit_turns",
@@ -230,7 +230,7 @@ def _initialize(client: TestClient) -> tuple[dict, str | None]:
 class TestMcpHttpProtocol:
     def test_initialize_handshake_succeeds(self, client):
         data, _ = _initialize(client)
-        assert data["result"]["serverInfo"]["name"] == "memory-layer"
+        assert data["result"]["serverInfo"]["name"] == "memstrata"
 
     def test_tools_list_returns_all_five_tools(self, client):
         _, session_id = _initialize(client)

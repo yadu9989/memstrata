@@ -9,21 +9,21 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.layer3._db import init_db
-from memory_layer.layer3.ingestion import (
+from memstrata.layer3._db import init_db
+from memstrata.layer3.ingestion import (
     BackfillOrchestrator,
     JobPhase,
     NoOpEmbedder,
     ResourcePolicy,
 )
-from memory_layer.layer3.ingestion.orchestrator import record_opt_in
-from memory_layer.layer3.ingestion.progress import (
+from memstrata.layer3.ingestion.orchestrator import record_opt_in
+from memstrata.layer3.ingestion.progress import (
     CONTROL_REGISTRY,
     ControlRegistry,
     ControlState,
     build_snapshot,
 )
-from memory_layer.layer3.ingestion.resource_policy import BatteryState
+from memstrata.layer3.ingestion.resource_policy import BatteryState
 
 # ── ETA / snapshot math ───────────────────────────────────────────────
 

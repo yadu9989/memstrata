@@ -17,7 +17,7 @@ CREATE INDEX idx_chat_sessions_provider ON chat_sessions(provider_id);
 CREATE INDEX idx_chat_sessions_last_seen ON chat_sessions(last_seen DESC);
 
 -- Scope existing tables to chat sessions.
--- rationale_log lives in the memory_layer core (V3); apply when present.
+-- rationale_log lives in the memstrata core (V3); apply when present.
 ALTER TABLE rationale_log ADD COLUMN chat_session_id TEXT REFERENCES chat_sessions(id);
 ALTER TABLE telemetry_session_timeline ADD COLUMN chat_session_id TEXT REFERENCES chat_sessions(id);
 

@@ -1,11 +1,11 @@
 """
-memory-layer CLI entry point.
+memstrata CLI entry point.
 
 Commands:
   init             4-question interactive onboarding wizard (V5.1 Phase 15'/17b)
   uninit-cd-hook   Remove the shell cd-hook written by `init`
   register <path>  Register a project directory (idempotent; --quiet for hook use)
-  api              Start the Memory Layer API server
+  api              Start the MemStrata API server
 """
 from __future__ import annotations
 
@@ -29,12 +29,12 @@ def _cmd_init(args: argparse.Namespace) -> None:
     """
     home = Path.home()
 
-    print("\nMemory Layer — Setup\n")
+    print("\nMemStrata — Setup\n")
 
     # ── [1/4] Data directory ──────────────────────────────────────────────
-    default_data_dir = home / ".memory-layer"
+    default_data_dir = home / ".memstrata"
     raw = input(
-        f"[1/4] Where should Memory Layer store its data?\n"
+        f"[1/4] Where should MemStrata store its data?\n"
         f"      [default: {default_data_dir}] "
     ).strip()
     data_dir = Path(raw).expanduser() if raw else default_data_dir
@@ -60,13 +60,13 @@ def _cmd_init(args: argparse.Namespace) -> None:
         enable_hook = True
     else:
         print("\n[3/4] Enable shell cd-hook for automatic project discovery?")
-        print("      (Adds a hook to your shell config; remove with `memory-layer uninit-cd-hook`)")
+        print("      (Adds a hook to your shell config; remove with `memstrata uninit-cd-hook`)")
         enable_hook = input("      [Y/n] ").strip().lower() not in ("n", "no")
 
     # ── [4/4] Which shell? ────────────────────────────────────────────────
     shell: str | None = None
     if enable_hook:
-        from memory_layer.cli.cd_hook import detect_shell
+        from memstrata.cli.cd_hook import detect_shell
         detected = detect_shell()
 
         _shell_options = [
@@ -97,7 +97,7 @@ def _cmd_init(args: argparse.Namespace) -> None:
     print(f"  ✓ Created {data_dir}/")
 
     if provider_key and provider_name:
-        from memory_layer.config.keychain import store_api_key
+        from memstrata.config.keychain import store_api_key
         try:
             store_api_key(provider_name, provider_key)
             print(f"  ✓ API key stored in OS keychain (provider: {provider_name})")
@@ -105,7 +105,7 @@ def _cmd_init(args: argparse.Namespace) -> None:
             print(f"  ! Warning: {exc}", file=sys.stderr)
 
     if enable_hook and shell:
-        from memory_layer.cli.cd_hook import config_path_for_shell, write_hook
+        from memstrata.cli.cd_hook import config_path_for_shell, write_hook
         config_path = config_path_for_shell(shell)
         try:
             write_hook(shell, config_path)
@@ -122,7 +122,7 @@ def _cmd_init(args: argparse.Namespace) -> None:
         "1": "Local (Ollama)", "2": "Anthropic (Claude)", "3": "OpenAI",
     }.get(model_choice, "Local")
     print(f"  ✓ Base model: {_model_label}")
-    print("\nMemory Layer is ready. Run `memory-layer api` to start.\n")
+    print("\nMemStrata is ready. Run `memstrata api` to start.\n")
 
 
 def _api_key_wizard(provider: str) -> str | None:
@@ -178,8 +178,8 @@ def _validate_api_key(provider: str, key: str) -> bool | None:
 # ── uninit-cd-hook ─────────────────────────────────────────────────────────────
 
 def _cmd_uninit_cd_hook(args: argparse.Namespace) -> None:
-    """Remove the memory-layer cd-hook from the user's shell config."""
-    from memory_layer.cli.cd_hook import config_path_for_shell, detect_shell, remove_hook
+    """Remove the memstrata cd-hook from the user's shell config."""
+    from memstrata.cli.cd_hook import config_path_for_shell, detect_shell, remove_hook
 
     shell = getattr(args, "shell", None) or detect_shell()
     if not shell:
@@ -191,7 +191,7 @@ def _cmd_uninit_cd_hook(args: argparse.Namespace) -> None:
 
     config_path = config_path_for_shell(shell)
     remove_hook(config_path)
-    print(f"Removed memory-layer cd-hook from {config_path}")
+    print(f"Removed memstrata cd-hook from {config_path}")
 
 
 # ── register ───────────────────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ def _cmd_register(args: argparse.Namespace) -> None:
 # ── api ────────────────────────────────────────────────────────────────────────
 
 def _cmd_api(args: argparse.Namespace) -> None:
-    """Start the Memory Layer API server.
+    """Start the MemStrata API server.
 
     Hard Rule 77 (V5.2-B): the local server binds strictly to 127.0.0.1.
     The host argument is fixed; no external-interface binding is permitted.
@@ -239,24 +239,24 @@ def _cmd_api(args: argparse.Namespace) -> None:
 
     host = "127.0.0.1"
     port: int = getattr(args, "port", 8000)
-    print(f"Starting Memory Layer API server on http://{host}:{port}")
-    uvicorn.run("memory_layer.layer3.api_server:app", host=host, port=port)
+    print(f"Starting MemStrata API server on http://{host}:{port}")
+    uvicorn.run("memstrata.layer3.api_server:app", host=host, port=port)
 
 
 # ── Parser ─────────────────────────────────────────────────────────────────────
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="memory-layer",
-        description="Memory Layer — open-source context server for LLM-assisted coding.",
+        prog="memstrata",
+        description="MemStrata — open-source context server for LLM-assisted coding.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Quick start:\n"
-            "  memory-layer init          # interactive setup\n"
-            "  memory-layer api           # start the API server\n"
+            "  memstrata init          # interactive setup\n"
+            "  memstrata api           # start the API server\n"
             "\n"
             "Project discovery:\n"
-            "  memory-layer register .    # register current directory manually\n"
+            "  memstrata register .    # register current directory manually\n"
         ),
     )
     sub = parser.add_subparsers(dest="command", metavar="<command>")
@@ -291,7 +291,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_reg.set_defaults(func=_cmd_register)
 
     # api — Hard Rule 77: bind is loopback-only; no --host flag is exposed.
-    p_api = sub.add_parser("api", help="Start the Memory Layer API server (binds 127.0.0.1 only)")
+    p_api = sub.add_parser("api", help="Start the MemStrata API server (binds 127.0.0.1 only)")
     p_api.add_argument("--port", type=int, default=8000, help="Bind port (default: 8000)")
     p_api.set_defaults(func=_cmd_api)
 
@@ -315,7 +315,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     def _cmd_ingest_wrapper(args: argparse.Namespace) -> None:
-        from memory_layer.cli.ingest import cmd_ingest
+        from memstrata.cli.ingest import cmd_ingest
         cmd_ingest(args)
 
     p_ingest.set_defaults(func=_cmd_ingest_wrapper)
@@ -324,7 +324,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    """CLI entry point installed as `memory-layer`."""
+    """CLI entry point installed as `memstrata`."""
     parser = _build_parser()
     args = parser.parse_args()
     args.func(args)

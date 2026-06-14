@@ -1,4 +1,4 @@
-"""Tests for memory_layer.layer3.api_server — Phase 31.
+"""Tests for memstrata.layer3.api_server — Phase 31.
 
 Verifies:
   - POST /telemetry/session creates a chat_sessions row when external_session_id
@@ -25,7 +25,7 @@ from fastapi.testclient import TestClient
 #
 # Some tests in this file exercise endpoints and dashboard pieces that
 # only exist when the memstrata-pro overlay is mounted on the app
-# (``memory_layer_pro.api_overlay.mount``). On the Open-only daemon
+# (``memstrata_pro.api_overlay.mount``). On the Open-only daemon
 # the overlay isn't present, so the relevant routes and HTML are
 # absent. Decorate those tests with ``@pytest.mark.requires_pro_overlay``
 # and the autouse fixture below skips them when the overlay isn't
@@ -38,7 +38,7 @@ from fastapi.testclient import TestClient
 
 def _pro_overlay_mounted() -> bool:
     """Return True when the api_server app has had the Pro overlay mounted."""
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     return hasattr(app.state, "cohort_api")
 
 
@@ -65,7 +65,7 @@ def isolated_db(tmp_path, monkeypatch):
 @pytest.fixture
 def client(isolated_db):
     # Lazy import so the env var is already set when the module's lifespan runs
-    from memory_layer.layer3.api_server import app
+    from memstrata.layer3.api_server import app
     with TestClient(app) as c:
         yield c
 
@@ -344,7 +344,7 @@ class TestSessionRegistration:
             "session_id": "ses_reg001",
             "project_id": "proj_test",
             "started_at": "2026-06-03T10:00:00Z",
-            "client_id": "memory-layer-pro-harness",
+            "client_id": "memstrata-pro-harness",
         })
         assert r.status_code == 200
         assert r.json()["session_id"] == "ses_reg001"
@@ -757,7 +757,7 @@ class TestDashboardHtml:
         r = client.get("/dashboard")
         assert r.status_code == 200
         assert "text/html" in r.headers["content-type"]
-        assert "Memory Layer Pro" in r.text
+        assert "MemStrata" in r.text
 
     def test_dashboard_references_api_endpoints(self, client):
         r = client.get("/dashboard")
@@ -1346,7 +1346,7 @@ class TestOutputSavingsFormula:
     """Regression: compute_output_savings_usd unit checks + storage."""
 
     def test_compute_output_savings_basic(self):
-        from memory_layer.layer3.pricing.lookup import (
+        from memstrata.layer3.pricing.lookup import (
             Rates,
             compute_output_savings_usd,
         )
@@ -1355,7 +1355,7 @@ class TestOutputSavingsFormula:
         assert compute_output_savings_usd(300, 100, r) == pytest.approx(0.01, abs=1e-6)
 
     def test_compute_output_savings_clamped_at_zero(self):
-        from memory_layer.layer3.pricing.lookup import (
+        from memstrata.layer3.pricing.lookup import (
             Rates,
             compute_output_savings_usd,
         )
@@ -1443,7 +1443,7 @@ class TestOpenRouterSyncKeyNames:
     not the older 'cache_read' / 'image_generation' keys."""
 
     def test_parser_reads_input_cache_read(self):
-        from memory_layer.layer3.pricing.openrouter_sync import _parse_openrouter_models
+        from memstrata.layer3.pricing.openrouter_sync import _parse_openrouter_models
         # Mimic OpenRouter's actual response shape (verified June 2026).
         rows = _parse_openrouter_models([
             {
@@ -1466,7 +1466,7 @@ class TestOpenRouterSyncKeyNames:
 
     def test_parser_ignores_legacy_keys(self):
         """The pre-fix keys ('cache_read', 'image_generation') must NOT be used."""
-        from memory_layer.layer3.pricing.openrouter_sync import _parse_openrouter_models
+        from memstrata.layer3.pricing.openrouter_sync import _parse_openrouter_models
         rows = _parse_openrouter_models([
             {
                 "id": "openai/gpt-test",

@@ -7,7 +7,7 @@ and a backgrounded invocation.
 """
 import pytest
 
-from memory_layer.cli.cd_hook import (
+from memstrata.cli.cd_hook import (
     _HOOK_MARKER_BEGIN,
     _HOOK_MARKER_END,
     hook_for_shell,
@@ -34,7 +34,7 @@ def test_markers_are_ordered(shell):
 
 @pytest.mark.parametrize("shell", SUPPORTED_SHELLS)
 def test_hook_contains_register_command(shell):
-    assert "memory-layer register" in hook_for_shell(shell)
+    assert "memstrata register" in hook_for_shell(shell)
 
 
 @pytest.mark.parametrize("shell", SUPPORTED_SHELLS)

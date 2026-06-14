@@ -7,7 +7,7 @@ There are six base tables plus a handful of indexes plus the
 
 This document describes each table, what's in it, and why. If you're
 looking for the SQL itself, it's all in
-[`memory_layer/layer3/_db.py`](../memory_layer/layer3/_db.py).
+[`memstrata/layer3/_db.py`](../memstrata/layer3/_db.py).
 
 ---
 
@@ -15,7 +15,7 @@ looking for the SQL itself, it's all in
 
 Each HTTP request gets its own short-lived `sqlite3.Connection`,
 opened via the `get_conn` dependency in
-`memory_layer/layer3/_db.py` and closed when the request returns.
+`memstrata/layer3/_db.py` and closed when the request returns.
 Background workers (the embedding worker, the pricing sync, the
 ingestion service) open their own connections and close them
 explicitly.
@@ -96,7 +96,7 @@ capture (role, text, char_count).
 | `model` | TEXT | Model identifier as the caller reports it |
 | `actual_input_tokens` | INTEGER | Counted post-injection |
 | `actual_output_tokens` | INTEGER | Counted from the response |
-| `saved_input_cost_usd` | REAL | Computed in `memory_layer.layer3.pricing.lookup.compute_input_savings_usd` |
+| `saved_input_cost_usd` | REAL | Computed in `memstrata.layer3.pricing.lookup.compute_input_savings_usd` |
 | `saved_cache_cost_usd` | REAL | Same module, KV-cache savings |
 | `saved_output_cost_usd` | REAL | Same module; non-zero only when a cohort baseline has closed (Pro tier) |
 | `measurement_basis` | TEXT | `'input_measured'`, `'cache_measured'`, `'output_cohort_measured'`, …. Provenance string |
@@ -192,7 +192,7 @@ A separate `embeddings` table maps `telemetry_session_timeline.id`
 to the corresponding row in `telemetry_timeline_vec`. Search queries
 join the two and rank by cosine distance.
 
-The retrieval layer (`memory_layer/layer3/retrieval.py`) is the only
+The retrieval layer (`memstrata/layer3/retrieval.py`) is the only
 consumer; everything else reads through it.
 
 ---
@@ -217,13 +217,13 @@ If you need a non-trivial migration:
 
 ## What's NOT in the Open schema
 
-The Pro tier adds two tables via `memory_layer_pro.pro_schema`:
+The Pro tier adds two tables via `memstrata_pro.pro_schema`:
 - `plan_features` — the JSON-encoded feature flag list per plan tier
 - `stripe_customers` — Stripe customer ID → internal user ID mapping
 - A `current_plan` row seed in `settings`
 
 Plus a `cohort_baseline` table created lazily by the Pro cohort module
-(`memory_layer_pro.baseline.cohort.ensure_table`). The Open daemon
+(`memstrata_pro.baseline.cohort.ensure_table`). The Open daemon
 never touches that table; the `_NoOpCohortApi` in `api_server.py`
 returns "no baseline" for every query.
 

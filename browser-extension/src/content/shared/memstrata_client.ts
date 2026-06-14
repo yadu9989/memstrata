@@ -1,4 +1,4 @@
-// src/content/shared/memory_layer_client.ts
+// src/content/shared/memstrata_client.ts
 //
 // Talks to localhost:8000 (the MIT core API server) via fetch + CORS.
 // API key is stored in chrome.storage.local and injected per-request.

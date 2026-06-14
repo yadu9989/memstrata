@@ -52,7 +52,7 @@ pytest tests/ingestion/         # one subsystem at a time
 When you touch the dashboard HTML/JS, also do a manual smoke:
 
 ```bash
-python -m memory_layer.cli.main daemon start    # or memstrata daemon start
+python -m memstrata.cli.main daemon start    # or memstrata daemon start
 # Open http://127.0.0.1:8000/dashboard and click through every tab.
 ```
 
@@ -77,7 +77,7 @@ of how clever the implementation is.
    servers" mode. We don't run servers that accept user data.
 
 4. **Open code never imports Pro code.** This repo has zero imports of
-   `memory_layer_pro`, `harness`, `billing`. CI greps for these on every
+   `memstrata_pro`, `harness`, `billing`. CI greps for these on every
    PR; the check fails the build if a Pro import lands.
 
 5. **Defensive everywhere.** Public surfaces (HTTP routes, MCP handlers,

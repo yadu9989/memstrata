@@ -31,22 +31,22 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Protocol
 
-from memory_layer.layer3.ingestion.chunker import (
+from memstrata.layer3.ingestion.chunker import (
     Chunk,
     chunk_file,
     detect_language,
 )
-from memory_layer.layer3.ingestion.denylist import (
+from memstrata.layer3.ingestion.denylist import (
     ProjectSkipPolicy,
     load_gitignore,
     should_index,
     should_walk_dir,
 )
-from memory_layer.layer3.ingestion.progress import (
+from memstrata.layer3.ingestion.progress import (
     CONTROL_REGISTRY,
     ControlState,
 )
-from memory_layer.layer3.ingestion.resource_policy import ResourcePolicy
+from memstrata.layer3.ingestion.resource_policy import ResourcePolicy
 
 _LOG = logging.getLogger(__name__)
 
@@ -660,5 +660,5 @@ def record_opt_in(
 
 
 # Phase 35.5 superseded the interim _BASE_DENY_DIRS constant; the full
-# denylist now lives in memory_layer/layer3/ingestion/denylist.py and is
+# denylist now lives in memstrata/layer3/ingestion/denylist.py and is
 # consulted via should_walk_dir + should_index from _enumerate_files.

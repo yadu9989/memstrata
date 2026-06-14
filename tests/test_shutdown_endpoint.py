@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def client():
-    import memory_layer.layer3.api_server as srv
+    import memstrata.layer3.api_server as srv
     with TestClient(srv.app) as c:
         yield c
 
@@ -34,7 +34,7 @@ class TestDaemonInfoEndpoint:
         }
 
     def test_version_matches_module_constant(self, client):
-        import memory_layer.layer3.api_server as srv
+        import memstrata.layer3.api_server as srv
         r = client.get("/system/daemon-info")
         assert r.json()["version"] == srv.__version__
 
@@ -84,7 +84,7 @@ class TestShutdownWithConfirmed:
         We only verify that the daemon scheduled a shutdown.
         """
         with patch(
-            "memory_layer.layer3.api_server._trigger_shutdown"
+            "memstrata.layer3.api_server._trigger_shutdown"
         ) as mock_trigger:
             r = client.post("/system/shutdown", json={
                 "source": "tray", "confirmed": True,
@@ -102,7 +102,7 @@ class TestShutdownWithConfirmed:
         # time, which we avoid.
 
     def test_shutdown_accepts_source_string(self, client):
-        with patch("memory_layer.layer3.api_server._trigger_shutdown"):
+        with patch("memstrata.layer3.api_server._trigger_shutdown"):
             r = client.post("/system/shutdown", json={
                 "source": "ci-smoke-test", "confirmed": True,
             })

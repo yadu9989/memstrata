@@ -153,7 +153,7 @@ def compute_output_savings_usd(
 ) -> float:
     """Dollar savings from generating a shorter output than the cohort baseline.
 
-    Memory Layer's injected context lets the model answer more concisely (it
+    MemStrata's injected context lets the model answer more concisely (it
     doesn't have to restate background). When actual_output < baseline (the
     project's cohort-measured average output per turn), the user saves
     (baseline - actual) * output_per_m.

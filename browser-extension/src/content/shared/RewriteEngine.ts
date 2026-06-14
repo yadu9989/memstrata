@@ -8,8 +8,8 @@
 // Phase 34.4: generateWithRetrieval() calls POST /context/for-chat-rewrite
 // and formats the result using <Established_Context> / <Active_Prompt> tags.
 
-import type { RetrievalResult } from './memory_layer_client.js';
-import { fetchChatRewriteContext } from './memory_layer_client.js';
+import type { RetrievalResult } from './memstrata_client.js';
+import { fetchChatRewriteContext } from './memstrata_client.js';
 
 export interface RewriteResult {
   originalPrompt: string;

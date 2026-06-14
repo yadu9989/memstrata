@@ -60,17 +60,20 @@ dev = [
     "respx>=0.21",
 ]
 
+[project.scripts]
+memstrata = "memstrata.cli.main:main"
+
 [project.urls]
 Homepage = "https://memstrata.dev"
 Repository = "https://github.com/memstrata/memstrata"
 Issues = "https://github.com/memstrata/memstrata/issues"
 
 [tool.setuptools.packages.find]
-include = ["memory_layer*"]
+include = ["memstrata*"]
 exclude = ["tests*", "browser-extension*"]
 
 [tool.setuptools.package-data]
-"memory_layer.layer3.pricing" = ["pricing_matrix.json"]
+"memstrata.layer3.pricing" = ["pricing_matrix.json"]
 
 [tool.ruff]
 line-length = 100

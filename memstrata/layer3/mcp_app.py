@@ -1,12 +1,12 @@
 """
-MCP (Model Context Protocol) server for Memory Layer.
+MCP (Model Context Protocol) server for MemStrata.
 
 Exposes a small set of read-only tools to MCP clients (Claude Code, Continue,
-custom agents) so they can query the local Memory Layer state without going
+custom agents) so they can query the local MemStrata state without going
 through the HTTP API surface directly.
 
 Mounted into the main FastAPI app at /mcp via streamable HTTP transport.
-Register with: `claude mcp add --transport http memory-layer http://localhost:8000/mcp`
+Register with: `claude mcp add --transport http memstrata http://localhost:8000/mcp`
 
 Stateless HTTP: each request is independent, no SSE session storage. This
 matches how Claude Code interacts with the server (one request → one
@@ -38,7 +38,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
-from memory_layer.layer3._db import get_db_path
+from memstrata.layer3._db import get_db_path
 
 _logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def _open_conn() -> sqlite3.Connection:
 
 def tool_get_context(project_id: str = "default", limit: int = 20) -> dict[str, Any]:
     """
-    Return the most recent Memory Layer turns for a project.
+    Return the most recent MemStrata turns for a project.
 
     Use this to recall what the user has been working on without scanning
     every chat thread. Turns are deduped by text and ordered newest-first.
@@ -272,13 +272,13 @@ def tool_search_memory(
 
 def tool_get_dashboard_stats() -> dict[str, Any]:
     """
-    Return Memory Layer usage and savings metrics.
+    Return MemStrata usage and savings metrics.
 
     Useful when the user asks "how much have I saved" or "what's my
-    Memory Layer status". Numbers cover all activity captured so far.
+    MemStrata status". Numbers cover all activity captured so far.
     """
     # Lazy import to avoid circular dependency.
-    from memory_layer.layer3.api_server import _compute_dashboard_state
+    from memstrata.layer3.api_server import _compute_dashboard_state
     conn = _open_conn()
     try:
         state = _compute_dashboard_state(conn)
@@ -323,9 +323,9 @@ def create_mcp_server() -> FastMCP:
         ],
     )
     mcp = FastMCP(
-        name="memory-layer",
+        name="memstrata",
         instructions=(
-            "Memory Layer exposes the user's locally-captured chat history "
+            "MemStrata exposes the user's locally-captured chat history "
             "and coding-session telemetry. Use it to recall what the user "
             "has discussed with AI assistants (ChatGPT, Claude, Gemini, etc.), "
             "find context already in their memory, or check usage metrics."

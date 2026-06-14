@@ -5,7 +5,7 @@ same JSON-over-HTTP protocol Claude Desktop, Cursor, and other IDE
 clients use to load context from external sources.
 
 The MCP server is implemented in
-[`memory_layer/layer3/mcp_app.py`](../memory_layer/layer3/mcp_app.py),
+[`memstrata/layer3/mcp_app.py`](../memstrata/layer3/mcp_app.py),
 mounted at `/mcp` of the local daemon. It speaks **Streamable HTTP**
 (the modern MCP transport — request/response over a single POST per
 call) and runs entirely on `127.0.0.1`.
@@ -36,7 +36,7 @@ The MCP server runs as a sub-app of the main daemon. Starting the
 daemon starts MCP automatically:
 
 ```bash
-python -m memory_layer.cli.main daemon start
+python -m memstrata.cli.main daemon start
 # or, equivalently, if you've installed the `memstrata` console script:
 memstrata daemon start
 ```

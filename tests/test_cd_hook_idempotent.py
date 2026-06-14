@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.cli.cd_hook import (
+from memstrata.cli.cd_hook import (
     _HOOK_MARKER_BEGIN,
     _HOOK_MARKER_END,
     remove_hook,

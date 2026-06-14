@@ -1,6 +1,6 @@
-"""Memory Layer MIT core — FastAPI server.
+"""MemStrata MIT core — FastAPI server.
 
-Started by `memory-layer api` → uvicorn.run("memory_layer.layer3.api_server:app").
+Started by `memstrata api` → uvicorn.run("memstrata.layer3.api_server:app").
 Consumed by:
   - The browser extension (POST /telemetry/session, GET /health, GET /baseline/status)
   - The harness (GET /context/injection, POST /sessions, POST /sessions/{id}/close,
@@ -58,7 +58,7 @@ _load_dotenv()
 
 # ---------------------------------------------------------------------------
 # V5.2-E E.1: Stripe setup and the /webhooks/stripe registration moved
-# to ``memory_layer_pro.api_overlay`` so this Open module is entirely
+# to ``memstrata_pro.api_overlay`` so this Open module is entirely
 # blind to billing. Pro overlay mounts at daemon startup.
 # ---------------------------------------------------------------------------
 
@@ -67,8 +67,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from memory_layer.layer3 import retrieval as _retrieval
-from memory_layer.layer3._db import (
+from memstrata.layer3 import retrieval as _retrieval
+from memstrata.layer3._db import (
     enqueue_for_embedding,
     get_conn,
     get_db_path,
@@ -78,14 +78,14 @@ from memory_layer.layer3._db import (
     parse_recorded_at,
     upsert_chat_session,
 )
-from memory_layer.layer3.pricing.lookup import (
+from memstrata.layer3.pricing.lookup import (
     compute_cache_savings_usd,
     compute_input_savings_usd,
     compute_output_savings_usd,
     get_rates,
 )
-from memory_layer.layer3.pricing.openrouter_sync import sync_loop as _pricing_sync_loop
-from memory_layer.workers.embedding_worker import EmbeddingWorker
+from memstrata.layer3.pricing.openrouter_sync import sync_loop as _pricing_sync_loop
+from memstrata.workers.embedding_worker import EmbeddingWorker
 
 # ---------------------------------------------------------------------------
 # V5.2-E E.1: cohort baseline dependency injection.
@@ -93,7 +93,7 @@ from memory_layer.workers.embedding_worker import EmbeddingWorker
 # The cohort baseline state machine is the "money-back guarantee"
 # integrity layer per Hard Rule 61 — Pro business logic. Open keeps a
 # NoOp default so this module is structurally blind to baselines; Pro
-# overlay (``memory_layer_pro.api_overlay``) replaces it on startup.
+# overlay (``memstrata_pro.api_overlay``) replaces it on startup.
 # ---------------------------------------------------------------------------
 
 class _NoOpCohortApi:
@@ -199,7 +199,7 @@ async def lifespan(app: FastAPI):
     # back to a 5-minute heartbeat so we still notice if Ollama dies.
     # Hard Rule 80: this MUST NOT block startup. The task is fired
     # and forgotten; the lifespan continues immediately.
-    from memory_layer.layer3.ollama_health import OllamaHealth, OllamaStatus
+    from memstrata.layer3.ollama_health import OllamaHealth, OllamaStatus
     app.state.ollama_status = OllamaHealth(
         status=OllamaStatus.UNKNOWN,
         configured_model="",
@@ -218,7 +218,7 @@ async def lifespan(app: FastAPI):
     # (e.g. watchdog unavailable, missing project_opt_in rows).
     ingestion_service = None
     try:
-        from memory_layer.layer3.ingestion import IngestionService
+        from memstrata.layer3.ingestion import IngestionService
         # ML_INGESTION_DISABLED=1 lets operators kill the watchers
         # without uninstalling the package (handy for diagnostics).
         if os.environ.get("ML_INGESTION_DISABLED") != "1":
@@ -242,9 +242,9 @@ async def lifespan(app: FastAPI):
     # Build a fresh FastMCP for this lifespan and wire it to the dispatcher.
     # Both transports are exposed: streamable HTTP (POST /) and SSE (GET /sse).
     # Register with:
-    #   --transport http: claude mcp add --transport http memory-layer http://localhost:8000/mcp
-    #   --transport sse:  claude mcp add --transport sse  memory-layer http://localhost:8000/mcp
-    from memory_layer.layer3.mcp_app import create_mcp_server
+    #   --transport http: claude mcp add --transport http memstrata http://localhost:8000/mcp
+    #   --transport sse:  claude mcp add --transport sse  memstrata http://localhost:8000/mcp
+    from memstrata.layer3.mcp_app import create_mcp_server
     fresh_mcp = create_mcp_server()
     _mcp_dispatcher.set_apps(
         fresh_mcp.streamable_http_app(),
@@ -279,10 +279,10 @@ async def lifespan(app: FastAPI):
                 pass
 
 
-app = FastAPI(title="Memory Layer Core", version="0.5.4", lifespan=lifespan)
+app = FastAPI(title="MemStrata Core", version="0.5.4", lifespan=lifespan)
 
 # Mount the dispatcher at /mcp.  Register the server with:
-#   claude mcp add --transport http memory-layer http://localhost:8000/mcp
+#   claude mcp add --transport http memstrata http://localhost:8000/mcp
 app.mount("/mcp", _mcp_dispatcher)
 
 app.add_middleware(
@@ -297,7 +297,7 @@ Conn = Annotated[sqlite3.Connection, Depends(get_conn)]
 
 
 # V5.2-E E.1: Stripe webhook registration moved to
-# ``memory_layer_pro.api_overlay._register_stripe_webhook``.
+# ``memstrata_pro.api_overlay._register_stripe_webhook``.
 
 
 # ---------------------------------------------------------------------------
@@ -334,7 +334,7 @@ async def _ollama_polling_loop(app_ref) -> None:
     import asyncio
     from datetime import datetime, timezone
 
-    from memory_layer.layer3.ollama_health import (
+    from memstrata.layer3.ollama_health import (
         OllamaStatus,
         check_ollama_async,
     )
@@ -387,9 +387,9 @@ def ollama_status() -> dict:
 # V5.2-D Phase D.5 — daemon info + shutdown endpoints
 # ---------------------------------------------------------------------------
 #
-# Consumed by the memory-layer-pro-tray process (V5.2-D §4.6). Both are
+# Consumed by the memstrata-pro-tray process (V5.2-D §4.6). Both are
 # 127.0.0.1-only by virtue of the uvicorn host binding done in
-# memory_layer/cli/main.py — no additional middleware needed.
+# memstrata/cli/main.py — no additional middleware needed.
 
 
 @app.get("/system/daemon-info")
@@ -853,7 +853,7 @@ def get_context(
 # Context injection - GET /context/injection  (called by the harness)
 #
 # Phase 36: now backed by the codebase_chunks table populated via
-# `memory-layer ingest`. Returns a stable per-project "architecture pack" block
+# `memstrata ingest`. Returns a stable per-project "architecture pack" block
 # (README + docs + key source files) concatenated to a soft token budget.
 # Stability is important - the block text + hash must NOT vary between turns
 # in the same session, otherwise the harness's prefix-cache logic invalidates
@@ -1513,7 +1513,7 @@ _DASHBOARD_HTML = """\
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Memory Layer — Dashboard</title>
+<title>MemStrata — Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:13px;background:#0f1117;color:#c8d0da;min-height:100vh}
@@ -1564,7 +1564,7 @@ h1{font-size:14px;font-weight:600;color:#e8eaf0;letter-spacing:.01em}
 </head>
 <body>
 <header>
-  <h1>Memory Layer Pro</h1>
+  <h1>MemStrata</h1>
   <span id="tier-badge" class="tier-badge tier-free">free</span>
   <span id="ts">Loading…</span>
 </header>
@@ -1680,7 +1680,7 @@ async function load(){
     document.getElementById('err').style.display='none';
     document.getElementById('ts').textContent='Updated '+new Date().toLocaleTimeString();
   }catch(e){
-    document.getElementById('err').textContent='Memory Layer core offline. Is it running on localhost:8000?';
+    document.getElementById('err').textContent='MemStrata core offline. Is it running on localhost:8000?';
     document.getElementById('err').style.display='';
     document.getElementById('ts').textContent='Offline';
   }
@@ -1702,7 +1702,7 @@ def dashboard(request: Request) -> str:
     V5.2-E E.1 — the dashboard template carries placeholder markers
     (``/* PRO_MONEY_TAB_CSS */``, ``<!-- PRO_MONEY_TAB_BODY -->``, etc.)
     where Pro money-tab content goes. When the Pro overlay is mounted
-    (``memory_layer_pro.api_overlay.mount``), ``app.state.dashboard_extras``
+    (``memstrata_pro.api_overlay.mount``), ``app.state.dashboard_extras``
     holds the substitution map and we replace each marker with its Pro
     value. When the overlay isn't mounted (post-split Open running alone),
     the markers stay as inert HTML/JS comments and the page renders with
@@ -1743,7 +1743,7 @@ def indexing_state(conn: Conn) -> dict:
     The dashboard polls this every 2 s for live progress; the wizard
     also reads it to surface "Indexing X% complete" in the terminal.
     """
-    from memory_layer.layer3.ingestion.progress import (
+    from memstrata.layer3.ingestion.progress import (
         CONTROL_REGISTRY,
         build_snapshot,
     )
@@ -1773,7 +1773,7 @@ def indexing_pause(body: IndexingControlBody, conn: Conn) -> dict:
     """User-initiated pause — flips the in-memory pause flag AND
     persists ``indexing_jobs.phase = 'paused'`` so a process restart
     knows we were paused, not crashed."""
-    from memory_layer.layer3.ingestion.progress import CONTROL_REGISTRY
+    from memstrata.layer3.ingestion.progress import CONTROL_REGISTRY
     state = CONTROL_REGISTRY.get_or_create(body.project_id)
     state.pause_flag.set()
     conn.execute(
@@ -1788,7 +1788,7 @@ def indexing_pause(body: IndexingControlBody, conn: Conn) -> dict:
 def indexing_resume(body: IndexingControlBody, conn: Conn) -> dict:
     """Clear the pause flag. The orchestrator's ``resume()`` figures out
     which phase to re-enter based on persisted counters."""
-    from memory_layer.layer3.ingestion.progress import CONTROL_REGISTRY
+    from memstrata.layer3.ingestion.progress import CONTROL_REGISTRY
     state = CONTROL_REGISTRY.get_or_create(body.project_id)
     state.pause_flag.clear()
     # We don't auto-restart the orchestrator from here — the dashboard
@@ -1802,7 +1802,7 @@ def indexing_cancel(body: IndexingControlBody, conn: Conn) -> dict:
     """Hard stop — sets cancel + pause flags, persists 'paused' so the
     user can retry later. We deliberately don't delete the partial
     indexing_jobs row; the resume API recovers it."""
-    from memory_layer.layer3.ingestion.progress import CONTROL_REGISTRY
+    from memstrata.layer3.ingestion.progress import CONTROL_REGISTRY
     state = CONTROL_REGISTRY.get_or_create(body.project_id)
     state.cancel_flag.set()
     state.pause_flag.set()
@@ -1818,7 +1818,7 @@ _INDEXING_HTML = """<!DOCTYPE html>
 <html lang=\"en\">
 <head>
 <meta charset=\"utf-8\">
-<title>Memory Layer Pro - Indexing</title>
+<title>MemStrata - Indexing</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
          background: #0f1419; color: #e6edf3; margin: 0; padding: 24px; }
@@ -1870,7 +1870,7 @@ async function refresh() {
   const data = await r.json();
   const root = document.getElementById('root');
   if (!data.jobs || data.jobs.length === 0) {
-    root.innerHTML = '<div class=\"empty\">No indexing jobs in progress.<br>Use <code>memory-layer-pro init</code> to index a project.</div>';
+    root.innerHTML = '<div class=\"empty\">No indexing jobs in progress.<br>Use <code>memstrata-pro init</code> to index a project.</div>';
     return;
   }
   root.innerHTML = data.jobs.map(j => `
@@ -1926,7 +1926,7 @@ class DeleteChatSessionBody(BaseModel):
 
 @app.post("/chat-session/delete")
 def delete_chat_session(body: DeleteChatSessionBody, conn: Conn) -> dict:
-    """Delete all Memory Layer data for a single chat session.
+    """Delete all MemStrata data for a single chat session.
 
     Called by the browser extension's NLCommandDetector after the user
     confirms "delete this chat history" / "wipe memory for this chat".
@@ -1963,7 +1963,7 @@ def delete_chat_session(body: DeleteChatSessionBody, conn: Conn) -> dict:
 
 @app.post("/memory/delete-all")
 def delete_all_memory(conn: Conn) -> dict:
-    """Delete ALL Memory Layer data across all chats and providers.
+    """Delete ALL MemStrata data across all chats and providers.
 
     Called after double-confirmation of "delete all my memory".
     Hard Rule 66: the caller (extension) must have already shown two-step
@@ -1990,7 +1990,7 @@ def delete_all_memory(conn: Conn) -> dict:
 
 # V5.2-E E.1: Phase 33 License / plan-feature endpoints
 # (/license/current-plan, /license/plan-features, /license/set-plan)
-# moved to ``memory_layer_pro.api_overlay._register_license_routes``.
+# moved to ``memstrata_pro.api_overlay._register_license_routes``.
 
 
 # ---------------------------------------------------------------------------

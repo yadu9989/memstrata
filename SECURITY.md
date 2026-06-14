@@ -113,7 +113,7 @@ machine through this codebase.
 
 API keys for upstream providers (OpenAI, Anthropic, Google, Ollama) are
 NEVER stored by this codebase in a database we control. The CLI's
-optional keychain wrapper (`memory_layer/config/keychain.py`) hands
+optional keychain wrapper (`memstrata/config/keychain.py`) hands
 the key to your OS keyring (Windows Credential Manager, macOS
 Keychain, Linux secret-service) — we don't keep our own copy.
 
@@ -123,20 +123,20 @@ credential manager if you want to clear them.
 
 ### 5. Local file system access scope
 
-The ingestion subsystem (`memory_layer/layer3/ingestion/`) reads only:
+The ingestion subsystem (`memstrata/layer3/ingestion/`) reads only:
 - Paths explicitly registered via `memstrata register` or the cd-hook
 - Files matching project-level allow rules (the watcher's per-project
   filter)
 - Never `~/.ssh/`, `~/.aws/`, `~/.config/`, or other obviously
   sensitive paths — denylists are baked into
-  `memory_layer/layer3/ingestion/denylist.py`
+  `memstrata/layer3/ingestion/denylist.py`
 
 If the denylist misses a category of file you care about, that's a
 security issue and we treat it as one. Report it.
 
 ### 6. Pro-tier import boundary
 
-The Open repo contains zero `import memory_layer_pro`, `import harness`,
+The Open repo contains zero `import memstrata_pro`, `import harness`,
 `import billing`. The Pro tier is a separate codebase under a
 proprietary license. CI fails the build if a Pro import lands in this
 tree. This isn't security in the cryptographic sense, but it IS the

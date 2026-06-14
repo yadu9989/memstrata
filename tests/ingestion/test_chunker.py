@@ -1,4 +1,4 @@
-"""Tests for memory_layer.layer3.ingestion.chunker (V5.2-A Phase 35.1)."""
+"""Tests for memstrata.layer3.ingestion.chunker (V5.2-A Phase 35.1)."""
 from __future__ import annotations
 
 import textwrap
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.layer3.ingestion.chunker import (
+from memstrata.layer3.ingestion.chunker import (
     SMALL_FILE_LINE_THRESHOLD,
     Chunk,
     chunk_file,

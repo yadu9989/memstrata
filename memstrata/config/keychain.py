@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-SERVICE_NAME = "memory-layer"
+SERVICE_NAME = "memstrata"
 
 
 def store_api_key(provider: str, api_key: str) -> None:

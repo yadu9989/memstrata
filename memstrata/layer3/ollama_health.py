@@ -143,7 +143,7 @@ async def check_ollama_async(
     """Async Ollama reachability + model presence check.
 
     Used by the MIT-Core background polling task. httpx is already a
-    runtime dep of memory_layer (see pricing.openrouter_sync). Catches
+    runtime dep of memstrata (see pricing.openrouter_sync). Catches
     every exception — Hard Rule 80: this function never raises.
     """
     try:

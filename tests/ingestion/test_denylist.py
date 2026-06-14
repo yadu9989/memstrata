@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from memory_layer.layer3.ingestion.denylist import (
+from memstrata.layer3.ingestion.denylist import (
     DENY_FILE_BASENAMES,
     DENY_FILE_EXTENSIONS,
     HARDCODED_DENYLIST,

@@ -14,8 +14,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-_HOOK_MARKER_BEGIN = "# >>> memory-layer cd-hook >>>"
-_HOOK_MARKER_END   = "# <<< memory-layer cd-hook <<<"
+_HOOK_MARKER_BEGIN = "# >>> memstrata cd-hook >>>"
+_HOOK_MARKER_END   = "# <<< memstrata cd-hook <<<"
 
 
 def hook_for_shell(shell: str) -> str:
@@ -28,8 +28,8 @@ def hook_for_shell(shell: str) -> str:
     if shell == "zsh":
         body = """
 ml_cd_hook() {
-    if [ -d ".git" ] && command -v memory-layer >/dev/null 2>&1; then
-        (memory-layer register "$PWD" --quiet >/dev/null 2>&1 &)
+    if [ -d ".git" ] && command -v memstrata >/dev/null 2>&1; then
+        (memstrata register "$PWD" --quiet >/dev/null 2>&1 &)
     fi
 }
 typeset -gaU chpwd_functions
@@ -38,8 +38,8 @@ chpwd_functions+=(ml_cd_hook)
     elif shell == "bash":
         body = """
 ml_cd_hook() {
-    if [ -d ".git" ] && command -v memory-layer >/dev/null 2>&1; then
-        (memory-layer register "$PWD" --quiet >/dev/null 2>&1 &)
+    if [ -d ".git" ] && command -v memstrata >/dev/null 2>&1; then
+        (memstrata register "$PWD" --quiet >/dev/null 2>&1 &)
     fi
 }
 PROMPT_COMMAND="ml_cd_hook;${PROMPT_COMMAND:-:}"
@@ -48,8 +48,8 @@ PROMPT_COMMAND="ml_cd_hook;${PROMPT_COMMAND:-:}"
         body = """
 function ml_cd_hook --on-variable PWD
     if test -d .git
-        if command -v memory-layer >/dev/null 2>&1
-            memory-layer register "$PWD" --quiet >/dev/null 2>&1 &
+        if command -v memstrata >/dev/null 2>&1
+            memstrata register "$PWD" --quiet >/dev/null 2>&1 &
         end
     end
 end
@@ -59,9 +59,9 @@ end
 $global:__MlOriginalPrompt = if (Test-Path Function:prompt) { Get-Item Function:prompt } else { $null }
 function global:prompt {
     if (Test-Path -PathType Container ".git") {
-        if (Get-Command memory-layer -ErrorAction SilentlyContinue) {
+        if (Get-Command memstrata -ErrorAction SilentlyContinue) {
             Start-Job -ScriptBlock {
-                param($p) memory-layer register $p --quiet
+                param($p) memstrata register $p --quiet
             } -ArgumentList $PWD.Path | Out-Null
         }
     }
