@@ -28,6 +28,8 @@ import { NLCommandDetector } from './shared/NLCommandDetector';
 import { NLCommandConfirmDialog } from './shared/NLCommandConfirmDialog';
 // Phase 33: feature gate (Hard Rule 64)
 import { isFeatureActive } from '../shared/FeatureGate';
+// V5.2-E E.11: daemon tier probe — gates augmentation UI on the Pro overlay.
+import { getTier } from '../shared/TierGate';
 // Phase 34: augmenter UI (floating button) + rewrite mode
 import { setReactInputValue, getAugmenterUI, findPromptElement } from './shared/augmenter';
 import type { AugmenterUI } from './shared/augmenter';
@@ -388,6 +390,35 @@ async function actualInit(): Promise<void> {
   // ── Phase 34: AugmenterUI (floating "+ Add project context" button) ────────
   // Create the Shadow-DOM button and wire it to every textarea input event.
   // Hard Rule 58: the button appearing is not injection; only a click injects.
+  //
+  // V5.2-E E.11 — addendum §3.4 Option B: the augmenter only renders when
+  // the local daemon reports tier "pro". On a free tier OR Open-only
+  // daemon (no /system/tier route) we tear down any prior UI and skip
+  // mount; capture continues unchanged via the streaming interceptor
+  // bridge above.
+
+  const tier = await getTier();
+  if (tier !== 'pro') {
+    activeAugmenterUI?.destroy();
+    activeAugmenterUI = null;
+    if (activeAugInputHandler) {
+      document.removeEventListener('input', activeAugInputHandler, true);
+      activeAugInputHandler = null;
+    }
+    // Fall through to watchUrlChanges so SPA navigation still tears
+    // down per-session state cleanly.
+    watchUrlChanges(() => {
+      chain.stop();
+      piercer.dispose();
+      activeChain = null;
+      activeShadowPiercer = null;
+      const prev = (window as Window & { _mlNlHandler?: EventListener })._mlNlHandler;
+      if (prev) document.removeEventListener('keydown', prev, true);
+      activeInterceptorBridge?.dispose();
+      activeInterceptorBridge = null;
+    });
+    return;
+  }
 
   activeAugmenterUI?.destroy();
   activeAugmenterUI = getAugmenterUI();
