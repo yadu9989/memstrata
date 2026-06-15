@@ -200,9 +200,19 @@ def _cmd_register(args: argparse.Namespace) -> None:
     """
     Register a project directory (idempotent).
 
+    Writes the Hard Rule 70 opt-in row directly to the local DB. When a
+    daemon is running it will pick the project up on the next watcher
+    sweep; for live attach the Pro VS Code extension posts to
+    ``/projects/register`` instead of shelling out to this CLI.
+
     Called by the shell cd-hook with --quiet, so error output must go to
     stderr and the process must exit non-zero on failure.
     """
+    import sqlite3
+
+    from memstrata.layer3._db import get_db_path, init_db
+    from memstrata.layer3.ingestion.orchestrator import record_opt_in
+
     path = Path(args.path).resolve()
     quiet: bool = getattr(args, "quiet", False)
 
@@ -215,7 +225,13 @@ def _cmd_register(args: argparse.Namespace) -> None:
         print(f"register: {path} is not a git repository (no .git/); skipping")
         return
 
-    # Wire to MIT core register logic (stub — wired at runtime via env/config).
+    conn = sqlite3.connect(str(get_db_path()))
+    try:
+        init_db(conn)
+        record_opt_in(conn, path)
+    finally:
+        conn.close()
+
     if not quiet:
         print(f"Registered: {path}")
 

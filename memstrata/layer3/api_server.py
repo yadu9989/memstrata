@@ -510,6 +510,79 @@ def close_session(session_id: str, conn: Conn) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Project registration — POST /projects/register
+#
+# Reactivates the dormant VS Code auto-ingestion flow per V5.2-A §6.1. The
+# Pro extension calls this on activation with the open workspace folder so
+# the daemon-side IngestionService (Hard Rule 70 / 73) can begin watching
+# the project without the user manually running `memstrata ingest`.
+#
+# The route is intentionally Open-side: the browser extension's tier probe
+# and any future first-class IDE clients (Cursor, Zed, JetBrains) all need
+# the same opt-in handshake, and putting it in the Pro overlay would gate
+# free-tier users out of the watcher entirely.
+# ---------------------------------------------------------------------------
+
+class RegisterProjectBody(BaseModel):
+    path: str
+    user_added_dirs: list[str] | None = None
+    user_excluded_dirs: list[str] | None = None
+
+
+@app.post("/projects/register")
+def register_project_route(body: RegisterProjectBody, conn: Conn, request: Request) -> dict:
+    """Opt a project in for IngestionService watching.
+
+    The Pro VS Code extension calls this on activation with the open
+    workspace folder. The route:
+      1. Writes / upserts the ``project_opt_in`` row (Hard Rule 70 gate).
+      2. If the IngestionService is live, hands the path to ``add_project``
+         so watching starts immediately — no daemon restart required.
+
+    Returns the resolved absolute path so the caller can log what got
+    registered (Windows path normalisation, symlink resolution, etc.).
+    """
+    from memstrata.layer3.ingestion.orchestrator import record_opt_in
+
+    raw = Path(body.path).expanduser()
+    if not raw.exists():
+        raise HTTPException(status_code=400, detail=f"path does not exist: {body.path}")
+    if not raw.is_dir():
+        raise HTTPException(status_code=400, detail=f"not a directory: {body.path}")
+    resolved = str(raw.resolve())
+
+    record_opt_in(
+        conn,
+        resolved,
+        user_added_dirs=body.user_added_dirs,
+        user_excluded_dirs=body.user_excluded_dirs,
+    )
+
+    # Best-effort live attach. NotOptedIn can't fire here because we just
+    # wrote the row, but watchdog construction or sweep startup can still
+    # raise on platform-specific surfaces (e.g., inotify limit). The route
+    # stays successful in that case — the watcher will pick up the project
+    # at the next daemon restart from project_opt_in regardless.
+    watcher_started = False
+    service = getattr(request.app.state, "ingestion_service", None)
+    if service is not None:
+        try:
+            service.add_project(resolved)
+            watcher_started = True
+        except Exception as exc:                                # noqa: BLE001
+            _logger.warning(
+                "register_project: live attach failed for %s: %s",
+                resolved, exc,
+            )
+
+    return {
+        "project_path": resolved,
+        "state": "opted_in",
+        "watcher_started": watcher_started,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Telemetry ingest — POST /telemetry/session
 # Phase 31: when external_session_id is present, upsert chat_sessions and set
 # the FK on the telemetry row.

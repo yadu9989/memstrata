@@ -349,6 +349,56 @@ class TestContextForChat:
 
 
 # ---------------------------------------------------------------------------
+# POST /projects/register — VS Code auto-ingestion handshake
+# ---------------------------------------------------------------------------
+
+class TestProjectRegistration:
+    """V5.2-E reactivation of the dormant auto-ingestion flow."""
+
+    def test_register_writes_opt_in_row(self, client, tmp_path, db_conn):
+        project = tmp_path / "demo-proj"
+        project.mkdir()
+
+        r = client.post("/projects/register", json={"path": str(project)})
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["state"] == "opted_in"
+        assert body["project_path"] == str(project.resolve())
+
+        row = db_conn.execute(
+            "SELECT state FROM project_opt_in WHERE project_path = ?",
+            (str(project.resolve()),),
+        ).fetchone()
+        assert row is not None and row[0] == "opted_in"
+
+    def test_register_is_idempotent(self, client, tmp_path, db_conn):
+        project = tmp_path / "demo-proj-2"
+        project.mkdir()
+        for _ in range(3):
+            r = client.post("/projects/register", json={"path": str(project)})
+            assert r.status_code == 200
+
+        rows = db_conn.execute(
+            "SELECT COUNT(*) FROM project_opt_in WHERE project_path = ?",
+            (str(project.resolve()),),
+        ).fetchone()
+        assert rows[0] == 1
+
+    def test_register_rejects_missing_path(self, client, tmp_path):
+        ghost = tmp_path / "does-not-exist"
+        r = client.post("/projects/register", json={"path": str(ghost)})
+        assert r.status_code == 400
+        assert "does not exist" in r.json()["detail"]
+
+    def test_register_rejects_file_path(self, client, tmp_path):
+        f = tmp_path / "not-a-dir.txt"
+        f.write_text("x")
+        r = client.post("/projects/register", json={"path": str(f)})
+        assert r.status_code == 400
+        assert "not a directory" in r.json()["detail"]
+
+
+# ---------------------------------------------------------------------------
 # Session registration round-trip
 # ---------------------------------------------------------------------------
 
