@@ -525,6 +525,12 @@ def close_session(session_id: str, conn: Conn) -> dict:
 
 class RegisterProjectBody(BaseModel):
     path: str
+    # Optional override for the canonical project_id used in code_chunks /
+    # codebase_files. When omitted, the IngestionService derives it from
+    # the path. The Pro VS Code extension passes its workspace name here
+    # so the harness's `x-project-id` header (set to vscode.workspace.name)
+    # finds the ingested rows on the /context/injection lookup.
+    project_id: str | None = None
     user_added_dirs: list[str] | None = None
     user_excluded_dirs: list[str] | None = None
 
@@ -539,8 +545,8 @@ def register_project_route(body: RegisterProjectBody, conn: Conn, request: Reque
       2. If the IngestionService is live, hands the path to ``add_project``
          so watching starts immediately — no daemon restart required.
 
-    Returns the resolved absolute path so the caller can log what got
-    registered (Windows path normalisation, symlink resolution, etc.).
+    Returns the resolved absolute path AND the canonical project_id so
+    the caller can mirror it into its own x-project-id header values.
     """
     from memstrata.layer3.ingestion.orchestrator import record_opt_in
 
@@ -564,11 +570,13 @@ def register_project_route(body: RegisterProjectBody, conn: Conn, request: Reque
     # stays successful in that case — the watcher will pick up the project
     # at the next daemon restart from project_opt_in regardless.
     watcher_started = False
+    effective_project_id: str | None = body.project_id
     service = getattr(request.app.state, "ingestion_service", None)
     if service is not None:
         try:
-            service.add_project(resolved)
+            runtime = service.add_project(resolved, project_id=body.project_id)
             watcher_started = True
+            effective_project_id = runtime.project_id
         except Exception as exc:                                # noqa: BLE001
             _logger.warning(
                 "register_project: live attach failed for %s: %s",
@@ -577,6 +585,7 @@ def register_project_route(body: RegisterProjectBody, conn: Conn, request: Reque
 
     return {
         "project_path": resolved,
+        "project_id": effective_project_id,
         "state": "opted_in",
         "watcher_started": watcher_started,
     }

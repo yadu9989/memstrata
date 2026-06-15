@@ -163,18 +163,33 @@ class IngestionService:
             if runtime.sweep_thread is not None and runtime.sweep_thread.is_alive():
                 runtime.sweep_thread.join(timeout=5.0)
 
-    def add_project(self, project_path: str | Path) -> ProjectRuntime:
+    def add_project(
+        self,
+        project_path: str | Path,
+        *,
+        project_id: str | None = None,
+    ) -> ProjectRuntime:
         """Begin sweep + watch for *project_path*.
 
         Idempotent: re-adding an already-running project returns the
         existing ``ProjectRuntime`` without starting a second watcher.
+
+        ``project_id`` (optional, keyword-only): override the default
+        path-hashed project identifier. The Pro VS Code extension passes
+        its workspace name here so the LLM-request side of the harness
+        (``x-project-id`` header = ``vscode.workspace.name``) and the
+        ingestion side write to the same ``codebase_files.project_id``
+        rows. Without this bridge ``/context/injection?project_id=<name>``
+        returns the empty stub even though the watcher just indexed
+        the project under ``mlp:<name>:<hash>``.
         """
         project_path_str = str(Path(project_path).resolve())
         with self._lock:
             if project_path_str in self._projects:
                 return self._projects[project_path_str]
 
-        project_id = self._project_id_from_path(project_path_str)
+        if project_id is None:
+            project_id = self._project_id_from_path(project_path_str)
         # We open a fresh connection per project so concurrent watcher
         # threads don't trip sqlite3's check_same_thread default. WAL
         # mode is set inside init_db so writes don't block readers.
